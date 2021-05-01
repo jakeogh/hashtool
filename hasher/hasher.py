@@ -226,7 +226,11 @@ def generate_hash(data, *,
         return return_dict
     elif isinstance(data, Response):
         # todo make temp_folder configurable, make sure it exists
-        with tempfile.NamedTemporaryFile(mode='wb', suffix='.tmp', prefix='tmp-', dir='/var/tmp/iridb', delete=False) as temp_file:
+        with tempfile.NamedTemporaryFile(mode='wb',
+                                         suffix='.tmp',
+                                         prefix='tmp-',
+                                         dir='/var/tmp/iridb',
+                                         delete=False,) as temp_file:
             if verbose:
                 #import IPython; IPython.embed()
                 ic(data.url)
@@ -241,19 +245,36 @@ def generate_hash(data, *,
                 current_file_size = int(os.path.getsize(temp_file.name))
                 if data_size_from_headers:
                     eprint(temp_file.name,
-                           str(int((current_file_size / data_size_from_headers) * 100)) + '%', current_file_size, data.url, end='\r', flush=True)
+                           str(int((current_file_size / data_size_from_headers) * 100)) + '%',
+                           current_file_size,
+                           data.url,
+                           end='\r',
+                           flush=True,)
                 else:
-                    eprint(temp_file.name, current_file_size, data.url, end='\r', flush=True)
+                    eprint(temp_file.name,
+                           current_file_size,
+                           data.url,
+                           end='\r',
+                           flush=True,)
 
         current_file_size = int(os.path.getsize(temp_file.name))
         # update final size
         if data_size_from_headers:
             eprint(temp_file.name,
-                   str(int((current_file_size / data_size_from_headers) * 100)) + '%', current_file_size, data.url, end='\r', flush=True)
+                   str(int((current_file_size / data_size_from_headers) * 100)) + '%',
+                   current_file_size,
+                   data.url,
+                   end='\r',
+                   flush=True,)
         else:
-            eprint(temp_file.name, current_file_size, data.url, end='\r', flush=True)
+            eprint(temp_file.name,
+                   current_file_size,
+                   data.url,
+                   end='\r',
+                   flush=True,)
 
-        if verbose: eprint('\n', end='')
+        if verbose:
+            eprint('\n', end='')
         #eprint('finished writing temp_file:', temp_file.name)
         if os.path.getsize(temp_file.name) == 0:
             ic('content is zero bytes, raising FileNotFoundError')  # this happens
@@ -310,7 +331,10 @@ def get_openssl_hash_algs_real():
     blacklist = set(['SHA', 'MD4', 'ecdsa-with-SHA1', 'DSA', 'DSA-SHA', 'MDC2'])
     results = []
     command = ' '.join(['openssl', 'list-message-digest-algorithms'])
-    p = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    p = subprocess.Popen(command,
+                         shell=True,
+                         stdout=subprocess.PIPE,
+                         stderr=subprocess.STDOUT,)
     for line in p.stdout.readlines():
         if b'=>' not in line:
             line = line.strip()
