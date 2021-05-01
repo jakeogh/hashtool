@@ -417,7 +417,6 @@ class MtHasher(Hasher):
         return super(MtHasher, self).digests()
 
 
-
 def hash_bytes(byte_string):
     if isinstance(byte_string, str):
         byte_string = byte_string.encode('UTF-8')
