@@ -39,17 +39,26 @@ import attr
 import click
 from enumerate_input import enumerate_input
 from getdents import paths
-from kcl.assertops import verify
-from kcl.iterops import compact
+#from kcl.assertops import verify
+#from kcl.iterops import compact
 from requests.models import Response
 #from with_sshfs import sshfs
 #from with_chdir import chdir
-from retry_on_exception import retry_on_exception
+#from retry_on_exception import retry_on_exception
 from run_command import run_command
 
 #from collections import defaultdict
 #from kcl.pathops import path_is_block_special
 #from getdents import files
+
+# todo kcl.assertops breakout
+def verify(thing):
+    if not thing:
+        raise ValueError(thing)
+
+# todo kcl.iterops breakout
+def compact(items):
+    return [item for item in items if item]
 
 
 def eprint(*args, **kwargs):
