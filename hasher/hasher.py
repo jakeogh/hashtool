@@ -177,7 +177,7 @@ def rhash_file(path,
                verbose: bool,
                debug: bool,
                ):
-    assert isinstance(path, Path)
+    path = Path(path).resolve()
     #path_bytes = path.as_posix().encode('utf8')
     assert algorithms
     result_dict = {}
