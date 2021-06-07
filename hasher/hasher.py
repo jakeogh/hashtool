@@ -210,8 +210,9 @@ def rhash_file(path,
         alg, hexdigest = result.split(':')
         result_dict[alg] = hexdigest
 
-    with path.as_posix() as _path:
-        ic(_path, result_dict)
+    _path = path.as_posix()
+    ic(_path, result_dict)
+    del _path
 
     return result_dict
 
