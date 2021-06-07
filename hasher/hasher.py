@@ -189,7 +189,7 @@ def rhash_file(path,
             format_string.append('sha3_256:%{sha3-256}')
         elif algorithm == 'sha256':
             command.append('--sha256')
-            format_string.append('sha256:%{sha256}')
+            format_string.append('sha256:%{sha-256}')
         elif algorithm == 'sha1':
             command.append('--sha1')
             format_string.append('sha1:%{sha1}')
