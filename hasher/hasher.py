@@ -211,7 +211,7 @@ def rhash_file(path,
     #else:
     #    raise NotImplementedError(algorithm)
     #ic(command)
-    result = run_command(command, shell=True)
+    result = run_command(command, shell=True).decode('utf8')
     ic(result)
     results = result.split(' ')
     for result in results:
