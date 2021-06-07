@@ -200,17 +200,17 @@ def rhash_file(path,
     command.append(format_string)
     command.append(path.as_posix())
 
-    ic(command)
+    #ic(command)
 
     result = run_command(command, shell=True).decode('utf8')
-    ic(result)
+    #ic(result)
     results = result.split(' ')
     for result in results:
-        ic(result)
+        #ic(result)
         alg, hexdigest = result.split(':')
         result_dict[alg] = hexdigest
 
-    ic(result_dict)
+    ic(path.as_posix(), result_dict)
 
     return result_dict
 
