@@ -173,21 +173,55 @@ def hash_file_handle(handle, *,
 
 def rhash_file(*,
                path,
-               algorithm,
+               algorithms: list,
                verbose: bool,
                debug: bool,
                ):
     assert isinstance(path, Path)
-    path_bytes = path.as_posix().encode('utf8')
-    if algorithm == 'sha3_256':
-        command = [b"rhash", b"--sha3-256", path_bytes]  # tempfile._TemporaryFileWrapper.name is a Path()
-    elif algorithm == 'sha1':
-        command = [b"rhash", b"--sha1", path_bytes]  # tempfile._TemporaryFileWrapper.name is a Path()
-    else:
-        raise NotImplementedError(algorithm)
+    #path_bytes = path.as_posix().encode('utf8')
+    assert algorithms
+    result_dict = {}
+    format_string = []
+    command = ['rhash',]
+    for algorithm in algorithms:
+        if algorithm == 'sha3_256':
+            command.append('--sha3-256')
+            format_string.append('sha3_256:%{sha3-256}')
+        elif algorithm == 'sha256':
+            command.append('--sha256')
+            format_string.append('sha256:%{sha256}')
+        elif algorithm == 'sha1':
+            command.append('--sha1')
+            format_string.append('sha1:%{sha1}')
+        else:
+            raise NotImplementedError(algorithm)
+
+
+    format_string = ' '.join(format_string)
+    format_string = '--printf="{}"'.format(format_string)
+    command.append(format_string)
+    command.append(path.as_posix())
+
+    ic(command)
+
+    #if algorithm == 'sha3_256':
+    #    command = [b"rhash", b"--sha3-256", path_bytes]  # tempfile._TemporaryFileWrapper.name is a Path()
+    #elif algorithm == 'sha1':
+    #    command = [b"rhash", b"--sha1", path_bytes]  # tempfile._TemporaryFileWrapper.name is a Path()
+    #else:
+    #    raise NotImplementedError(algorithm)
     #ic(command)
-    sha3_256 = run_command(command, shell=True).split()[0].decode('utf8')
-    return sha3_256
+    result = run_command(command, shell=True)
+    ic(result)
+    results = result.split(' ')
+    for result in results:
+        ic(result)
+        alg, hexdigest = result.split(':')
+        result_dict[alg] = hexdigest
+
+    ic(result_dict)
+
+    return result_dict
 
 
 @attr.s(auto_attribs=True)
