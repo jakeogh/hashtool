@@ -173,12 +173,11 @@ def hash_file_handle(handle, *,
 
 def rhash_file(path,
                *,
-               algorithms: list,
+               algorithms: Iterable,
                verbose: bool,
                debug: bool,
                ):
     path = Path(path).resolve()
-    #path_bytes = path.as_posix().encode('utf8')
     assert algorithms
     result_dict = {}
     format_string = []
@@ -196,7 +195,6 @@ def rhash_file(path,
         else:
             raise NotImplementedError(algorithm)
 
-
     format_string = ' '.join(format_string)
     format_string = '--printf="{}"'.format(format_string)
     command.append(format_string)
@@ -204,13 +202,6 @@ def rhash_file(path,
 
     ic(command)
 
-    #if algorithm == 'sha3_256':
-    #    command = [b"rhash", b"--sha3-256", path_bytes]  # tempfile._TemporaryFileWrapper.name is a Path()
-    #elif algorithm == 'sha1':
-    #    command = [b"rhash", b"--sha1", path_bytes]  # tempfile._TemporaryFileWrapper.name is a Path()
-    #else:
-    #    raise NotImplementedError(algorithm)
-    #ic(command)
     result = run_command(command, shell=True).decode('utf8')
     ic(result)
     results = result.split(' ')
