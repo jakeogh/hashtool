@@ -171,8 +171,8 @@ def hash_file_handle(handle, *,
     return digest
 
 
-def rhash_file(*,
-               path,
+def rhash_file(path,
+               *,
                algorithms: list,
                verbose: bool,
                debug: bool,
