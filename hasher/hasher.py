@@ -48,7 +48,7 @@ from requests.models import Response
 from run_command import run_command
 
 #from collections import defaultdict
-#from kcl.pathops import path_is_block_special
+#from pathtool import path_is_block_special
 #from getdents import files
 
 # todo kcl.assertops breakout
@@ -90,14 +90,23 @@ def emptyhash(alg):
     return emptyhexdigest
 
 
-def hexdigest_str_path_relative(hexdigest: str, width: int, depth: int) -> Path:
+def hexdigest_str_path_relative(hexdigest: str,
+                                width: int,
+                                depth: int,
+                                ) -> Path:
     path_elements = shard(hexdigest, width=width, depth=depth)
     rel_path = Path(os.path.join(*path_elements))
     return rel_path
 
 
-def hexdigest_str_path(root: Path, hexdigest: str, width: int, depth: int) -> Path:
-    rel_path = hexdigest_str_path_relative(hexdigest=hexdigest, width=width, depth=depth)
+def hexdigest_str_path(root: Path,
+                       hexdigest: str,
+                       width: int,
+                       depth: int,
+                       ) -> Path:
+    rel_path = hexdigest_str_path_relative(hexdigest=hexdigest,
+                                           width=width,
+                                           depth=depth,)
     path = root / rel_path
     return path
 
@@ -117,7 +126,10 @@ def generate_hashlib_algorithm_set():
     return list(alg_set)
 
 
-def hash_readable(handle, algorithm, tmp):
+def hash_readable(handle,
+                  algorithm: str,
+                  tmp,
+                  ):
     block_size = 256 * 128 * 2
     hasher = hashlib.new(algorithm)
     for chunk in iter(lambda: handle.read(block_size), b''):
@@ -130,12 +142,14 @@ def hash_readable(handle, algorithm, tmp):
     return hasher.digest()
 
 
-def hash_file(path, *,
-              algorithm,
+def hash_file(path: Path,
+              *,
+              algorithm: str,
               tmp,
               verbose: bool,
               debug: bool,
               ):
+    path = Path(path).expanduser()
     fd = os.open(path, os.O_RDONLY)
     fh = os.fdopen(fd, 'rb')
     try:
@@ -150,7 +164,11 @@ def hash_file(path, *,
     return digest
 
 
-def hash_file_with_all_algorithms(path):
+def hash_file_with_all_algorithms(path: Path,
+                                  verbose: bool,
+                                  debug: bool,
+                                  ):
+    path = Path(path).expanduser()
     hasher = MtHasher()
     '''Read the file and update the hash states.'''
     for data in read_blocks(path):
@@ -158,8 +176,9 @@ def hash_file_with_all_algorithms(path):
     return hasher
 
 
-def hash_file_handle(handle, *,
-                     algorithm,
+def hash_file_handle(handle,
+                     *,
+                     algorithm: str,
                      tmp,
                      verbose: bool,
                      debug: bool,
@@ -171,13 +190,13 @@ def hash_file_handle(handle, *,
     return digest
 
 
-def rhash_file(path,
+def rhash_file(path: Path,
                *,
                algorithms: Iterable,
                verbose: bool,
                debug: bool,
                ):
-    path = Path(path).resolve()
+    path = Path(path).expanduser().resolve()
     assert algorithms
     result_dict = {}
     format_string = []
@@ -487,9 +506,9 @@ def hash_bytes(byte_string):
     return hasher
 
 
-def bytes_dict_file(path):
+def bytes_dict_file(path, verbose: bool, debug: bool,):
     bytes_dict = {}
-    hasher = hash_file_with_all_algorithms(path)
+    hasher = hash_file_with_all_algorithms(path=path, verbose=verbose, debug=debug,)
     for algo, digest in hasher.digests():
         bytes_dict[algo] = digest
     return bytes_dict
@@ -503,9 +522,9 @@ def bytes_dict_bytes(byte_string):
     return bytes_dict
 
 
-def hex_dict_file(path):
+def hex_dict_file(path, verbose: bool, debug: bool,):
     bytes_dict = {}
-    hasher = hash_file_with_all_algorithms(path)
+    hasher = hash_file_with_all_algorithms(path=path, verbose=verbose, debug=debug,)
     for algo, digest in hasher.hexdigests():
         bytes_dict[algo] = digest
     return bytes_dict
@@ -687,22 +706,17 @@ def cli(ctx,
                                        tail=tail,
                                        debug=debug,
                                        verbose=verbose,):
-        path = Path(path)
+        path = Path(path).expanduser()
 
         if verbose:
             ic(index, path)
 
-        with open(path, 'rb') as fh:
-            path_bytes_data = fh.read()
+        #with open(path, 'rb') as fh:
+        #    path_bytes_data = fh.read()
 
-        if not count:
-            print(path, end=end)
+        #if not count:
+        #    print(path, end=end)
 
-    if count:
-        print(index + 1, end=end)
-
-#        if ipython:
-#            import IPython; IPython.embed()
 
 #@cli.command()
 #@click.argument("urls", type=str, nargs=-1)
