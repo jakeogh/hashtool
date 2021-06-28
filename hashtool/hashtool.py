@@ -40,6 +40,7 @@ import click
 from enumerate_input import enumerate_input
 from getdents import paths
 from requests.models import Response
+from retry_on_exception import retry_on_exception
 from run_command import run_command
 
 
@@ -126,6 +127,7 @@ def hash_readable(handle,
     return hashtool.digest()
 
 
+@retry_on_exception(exception=PermissionError)
 def hash_file(path: Path,
               *,
               algorithm: str,
