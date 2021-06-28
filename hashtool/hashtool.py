@@ -179,7 +179,7 @@ def rhash_file(path: Path,
                algorithms: Iterable,
                verbose: bool,
                debug: bool,
-               ):
+               ) -> dict:
     path = Path(path).expanduser().resolve()
     assert algorithms
     result_dict = {}
