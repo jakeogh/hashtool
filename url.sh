@@ -1,2 +1,2 @@
 #!/bin/sh
-echo "https://github.com/jakeogh/hasher"
+echo "https://github.com/jakeogh/hashtool"

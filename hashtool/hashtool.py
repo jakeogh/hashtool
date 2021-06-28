@@ -131,15 +131,15 @@ def hash_readable(handle,
                   tmp,
                   ):
     block_size = 256 * 128 * 2
-    hasher = hashlib.new(algorithm)
+    hashtool = hashlib.new(algorithm)
     for chunk in iter(lambda: handle.read(block_size), b''):
-        hasher.update(chunk)
+        hashtool.update(chunk)
         if tmp:
             tmp.write(chunk)
     if tmp:
         os.posix_fadvise(tmp.file.name, 0, 0, os.POSIX_FADV_DONTNEED)
         tmp.close()
-    return hasher.digest()
+    return hashtool.digest()
 
 
 def hash_file(path: Path,
@@ -169,11 +169,11 @@ def hash_file_with_all_algorithms(path: Path,
                                   debug: bool,
                                   ):
     path = Path(path).expanduser()
-    hasher = MtHasher()
+    hashtool = MtHasher()
     '''Read the file and update the hash states.'''
     for data in read_blocks(path):
-        hasher.update(data)
-    return hasher
+        hashtool.update(data)
+    return hashtool
 
 
 def hash_file_handle(handle,
@@ -500,32 +500,32 @@ class MtHasher(Hasher):
 def hash_bytes(byte_string):
     if isinstance(byte_string, str):
         byte_string = byte_string.encode('UTF-8')
-    hasher = MtHasher()
+    hashtool = MtHasher()
     '''encode unicode to UTF-8, read bytes and update the hash states. '''
-    hasher.update(byte_string)
-    return hasher
+    hashtool.update(byte_string)
+    return hashtool
 
 
 def bytes_dict_file(path, verbose: bool, debug: bool,):
     bytes_dict = {}
-    hasher = hash_file_with_all_algorithms(path=path, verbose=verbose, debug=debug,)
-    for algo, digest in hasher.digests():
+    hashtool = hash_file_with_all_algorithms(path=path, verbose=verbose, debug=debug,)
+    for algo, digest in hashtool.digests():
         bytes_dict[algo] = digest
     return bytes_dict
 
 
 def bytes_dict_bytes(byte_string):
     bytes_dict = {}
-    hasher = hash_bytes(byte_string)
-    for algo, digest in hasher.digests():
+    hashtool = hash_bytes(byte_string)
+    for algo, digest in hashtool.digests():
         bytes_dict[algo] = digest
     return bytes_dict
 
 
 def hex_dict_file(path, verbose: bool, debug: bool,):
     bytes_dict = {}
-    hasher = hash_file_with_all_algorithms(path=path, verbose=verbose, debug=debug,)
-    for algo, digest in hasher.hexdigests():
+    hashtool = hash_file_with_all_algorithms(path=path, verbose=verbose, debug=debug,)
+    for algo, digest in hashtool.hexdigests():
         bytes_dict[algo] = digest
     return bytes_dict
 
