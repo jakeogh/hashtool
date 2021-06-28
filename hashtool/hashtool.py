@@ -39,22 +39,15 @@ import attr
 import click
 from enumerate_input import enumerate_input
 from getdents import paths
-#from kcl.assertops import verify
-#from kcl.iterops import compact
 from requests.models import Response
-#from with_sshfs import sshfs
-#from with_chdir import chdir
-#from retry_on_exception import retry_on_exception
 from run_command import run_command
 
-#from collections import defaultdict
-#from pathtool import path_is_block_special
-#from getdents import files
 
 # todo kcl.assertops breakout
 def verify(thing):
     if not thing:
         raise ValueError(thing)
+
 
 # todo kcl.iterops breakout
 def compact(items):
@@ -71,17 +64,6 @@ try:
     from icecream import ic  # https://github.com/gruns/icecream
 except ImportError:
     ic = eprint
-
-
-# import pdb; pdb.set_trace()
-# #set_trace(term_size=(80, 24))
-# from pudb import set_trace; set_trace(paused=False)
-
-##def log_uncaught_exceptions(ex_cls, ex, tb):
-##   eprint(''.join(traceback.format_tb(tb)))
-##   eprint('{0}: {1}'.format(ex_cls, ex))
-##
-##sys.excepthook = log_uncaught_exceptions
 
 
 def emptyhash(alg):
@@ -104,6 +86,8 @@ def hexdigest_str_path(root: Path,
                        width: int,
                        depth: int,
                        ) -> Path:
+
+    root = Path(root).expanduser().resolve()
     rel_path = hexdigest_str_path_relative(hexdigest=hexdigest,
                                            width=width,
                                            depth=depth,)
@@ -129,7 +113,7 @@ def generate_hashlib_algorithm_set():
 def hash_readable(handle,
                   algorithm: str,
                   tmp,
-                  ):
+                  ) -> bytes:
     block_size = 256 * 128 * 2
     hashtool = hashlib.new(algorithm)
     for chunk in iter(lambda: handle.read(block_size), b''):
@@ -148,7 +132,7 @@ def hash_file(path: Path,
               tmp,
               verbose: bool,
               debug: bool,
-              ):
+              ) -> bytes:
     path = Path(path).expanduser()
     fd = os.open(path, os.O_RDONLY)
     fh = os.fdopen(fd, 'rb')
@@ -168,7 +152,7 @@ def hash_file_with_all_algorithms(path: Path,
                                   verbose: bool,
                                   debug: bool,
                                   ):
-    path = Path(path).expanduser()
+    path = Path(path).expanduser().resolve()
     hashtool = MtHasher()
     '''Read the file and update the hash states.'''
     for data in read_blocks(path):
