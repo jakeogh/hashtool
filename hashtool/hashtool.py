@@ -590,4 +590,4 @@ def cli(ctx,
                                                verbose=verbose,
                                                debug=debug,)
         ic(dir(result))
-        ic(result.hexdigests)
+        ic(result.hexdigests())
