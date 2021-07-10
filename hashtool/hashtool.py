@@ -591,3 +591,4 @@ def cli(ctx,
                                                debug=debug,)
         ic(dir(result))
         ic(result.hexdigests())
+        ic(list(result.hexdigests()))
