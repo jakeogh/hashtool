@@ -37,34 +37,25 @@ from typing import Sequence
 
 import attr
 import click
+from asserttool import eprint
+from asserttool import ic
+from asserttool import nevd
+from asserttool import verify
 from enumerate_input import enumerate_input
 from getdents import paths
 from requests.models import Response
 from retry_on_exception import retry_on_exception
 from run_command import run_command
 
-
-# todo kcl.assertops breakout
-def verify(thing):
-    if not thing:
-        raise ValueError(thing)
+## todo kcl.assertops breakout
+#def verify(thing):
+#    if not thing:
+#        raise ValueError(thing)
 
 
 # todo kcl.iterops breakout
 def compact(items):
     return [item for item in items if item]
-
-
-def eprint(*args, **kwargs):
-    if 'file' in kwargs.keys():
-        kwargs.pop('file')
-    print(*args, file=sys.stderr, **kwargs)
-
-
-try:
-    from icecream import ic  # https://github.com/gruns/icecream
-except ImportError:
-    ic = eprint
 
 
 def emptyhash(alg):
@@ -77,6 +68,7 @@ def hexdigest_str_path_relative(hexdigest: str,
                                 width: int,
                                 depth: int,
                                 ) -> Path:
+
     path_elements = shard(hexdigest, width=width, depth=depth)
     rel_path = Path(os.path.join(*path_elements))
     return rel_path
@@ -151,12 +143,12 @@ def hash_file(path: Path,
 
 
 def hash_file_with_all_algorithms(path: Path,
+                                  *,
                                   verbose: bool,
                                   debug: bool,
                                   ):
     path = Path(path).expanduser().resolve()
     hashtool = MtHasher()
-    '''Read the file and update the hash states.'''
     for data in read_blocks(path):
         hashtool.update(data)
     return hashtool
@@ -556,181 +548,40 @@ def detect_hash_tree_width_and_depth(*,
     raise ValueError(message)
 
 
-    #current_path = root
-    #while width < max_width:
-    #    width += 1
-    #    while depth < max_depth:
-    #        #if verbose:
-    #        ic(current_path)
-    #        depth += 1
-    #        items = list(paths(path=current_path,
-    #                           names_only=True,
-    #                           return_dirs=True,
-    #                           return_files=True,
-    #                           return_symlinks=False,
-    #                           min_depth=1, max_depth=0))
-    #        if len(items[0]) != width:
-    #            if len(items[0]) == empty_hexdigest_length:
-    #                return width, depth - 1
-    #            break   # move to next width
-    #        current_path = current_path / Path(os.fsdecode(items[0]))
-
-    #message = "Unable to detect width/depth."
-    #raise ValueError(message)
-
-    ##wdgen = WDgen(width=max_width, depth=max_depth).go()
-    ##while not empty_hexdigest_path:
-    ##    try:
-    ##        width, depth = next(wdgen)
-    ##    except StopIteration:
-    ##        message = "Unable to autodetect width/depth. Specify --width and --depth to create a new root."
-    ##        raise ValueError(message)
-
-    ##    path = hexdigest_str_path(root, empty_hexdigest, width=width, depth=depth)
-    ##    if path_is_file(path):
-    ##        empty_hexdigest_path = path
-
-    ##    verify(width > 0)
-    ##    verify(depth > 0)  # depth in theory could be zero, but then why use this?
-    ##    verify(width <= max_width)
-    ##    verify(depth <= max_depth)
-    ##    if verbose:
-    ##        eprint("width:", width)
-    ##        eprint("depth:", depth)
-
-    ##return width, depth
-
-#@with_plugins(iter_entry_points('click_command_tree'))
-#@click.group()
-#@click.option('--verbose', is_flag=True)
-#@click.option('--debug', is_flag=True)
-#@click.pass_context
-#def cli(ctx,
-#        verbose: bool,
-#        debug: bool,
-#        ):
-#
-#    ctx.ensure_object(dict)
-#    ctx.obj['verbose'] = verbose
-#    ctx.obj['debug'] = debug
-
-
-# DONT CHANGE FUNC NAME
 @click.command()
 @click.argument("paths", type=str, nargs=-1)
-@click.argument("sysskel",
-                type=click.Path(exists=False,
-                                dir_okay=True,
-                                file_okay=False,
-                                path_type=str,
-                                allow_dash=False,),
-                nargs=1,
-                required=True,)
-#@click.option('--add', is_flag=True)
-@click.option('--algorithm', type=click.Choice(generate_hashlib_algorithm_set()), default='sha3_256')
+@click.option('--algorithm', 'algorithms', type=click.Choice(generate_hashlib_algorithm_set()), default='sha3_256', multiple=True)
 @click.option('--verbose', is_flag=True)
 @click.option('--debug', is_flag=True)
-@click.option('--simulate', is_flag=True)
-@click.option('--ipython', is_flag=True)
-@click.option('--count', is_flag=True)
-@click.option('--skip', type=int, default=False)
-@click.option('--head', type=int, default=False)
-@click.option('--tail', type=int, default=False)
-@click.option("--printn", is_flag=True)
-#@click.option("--progress", is_flag=True)
 @click.pass_context
 def cli(ctx,
-        paths,
-        sysskel,
-        algorithm: str,
+        paths: tuple[str],
+        algorithms: tuple[str],
         verbose: bool,
         debug: bool,
-        simulate: bool,
-        ipython: bool,
-        count: bool,
-        skip: int,
-        head: int,
-        tail: int,
-        printn: bool,
         ):
 
-    null = not printn
-    end = '\n'
-    if null:
-        end = '\x00'
-    if sys.stdout.isatty():
-        end = '\n'
-        assert not ipython
-
-    #progress = False
-    #if (verbose or debug):
-    #    progress = False
-
-    ctx.ensure_object(dict)
-    if verbose:
-        ctx.obj['verbose'] = verbose
-    verbose = ctx.obj['verbose']
-    if debug:
-        ctx.obj['debug'] = debug
-    debug = ctx.obj['debug']
-
-    ctx.obj['end'] = end
-    ctx.obj['null'] = null
-    #ctx.obj['progress'] = progress
-    ctx.obj['count'] = count
-    ctx.obj['skip'] = skip
-    ctx.obj['head'] = head
-    ctx.obj['tail'] = tail
+    null, end, verbose, debug = nevd(ctx=ctx,
+                                     printn=False,
+                                     ipython=False,
+                                     verbose=verbose,
+                                     debug=debug,)
 
     iterator = paths
 
     for index, path in enumerate_input(iterator=iterator,
                                        null=null,
                                        progress=False,
-                                       skip=skip,
-                                       head=head,
-                                       tail=tail,
+                                       skip=None,
+                                       head=None,
+                                       tail=None,
                                        debug=debug,
                                        verbose=verbose,):
         path = Path(path).expanduser()
 
         if verbose:
             ic(index, path)
-
-        #with open(path, 'rb') as fh:
-        #    path_bytes_data = fh.read()
-
-        #if not count:
-        #    print(path, end=end)
-
-
-#@cli.command()
-#@click.argument("urls", type=str, nargs=-1)
-#@click.option('--verbose', is_flag=True)
-#@click.option('--debug', is_flag=True)
-#@click.pass_context
-#def some_command(ctx,
-#                 urls,
-#                 verbose: bool,
-#                 debug: bool,
-#                 ):
-#    if verbose:
-#        ctx.obj['verbose'] = verbose
-#    verbose = ctx.obj['verbose']
-#    if debug:
-#        ctx.obj['debug'] = debug
-#    debug = ctx.obj['debug']
-#
-#    iterator = urls
-#    for index, url in enumerate_input(iterator=iterator,
-#                                      null=ctx.obj['null'],
-#                                      progress=ctx.obj['progress'],
-#                                      skip=ctx.obj['skip'],
-#                                      head=ctx.obj['head'],
-#                                      tail=ctx.obj['tail'],
-#                                      debug=ctx.obj['debug'],
-#                                      verbose=ctx.obj['verbose'],):
-#
-#        if ctx.obj['verbose']:
-#            ic(index, url)
-
+        result = hash_file_with_all_algorithms(path=path,
+                                               verbose=verbose,
+                                               debug=debug,)
+        print(result)
