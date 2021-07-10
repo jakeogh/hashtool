@@ -147,6 +147,8 @@ def hash_file_with_all_algorithms(path: Path,
                                   verbose: bool,
                                   debug: bool,
                                   ):
+    if verbose:
+        ic(path)
     path = Path(path).expanduser().resolve()
     hashtool = MtHasher()
     for data in read_blocks(path):
@@ -549,7 +551,7 @@ def detect_hash_tree_width_and_depth(*,
 
 
 @click.command()
-@click.argument("paths", type=str, nargs=-1)
+@click.argument("files", type=str, nargs=-1)
 @click.option('--algorithm', 'algorithms',
               type=click.Choice(generate_hashlib_algorithm_set()),
               default=['sha3_256'],
@@ -558,7 +560,7 @@ def detect_hash_tree_width_and_depth(*,
 @click.option('--debug', is_flag=True)
 @click.pass_context
 def cli(ctx,
-        paths: tuple[str],
+        files: tuple[str],
         algorithms: tuple[str],
         verbose: bool,
         debug: bool,
@@ -570,7 +572,7 @@ def cli(ctx,
                                      verbose=verbose,
                                      debug=debug,)
 
-    iterator = paths
+    iterator = files
 
     for index, path in enumerate_input(iterator=iterator,
                                        null=null,
@@ -587,4 +589,5 @@ def cli(ctx,
         result = hash_file_with_all_algorithms(path=path,
                                                verbose=verbose,
                                                debug=debug,)
-        print(result)
+        ic(dir(result))
+        #print(result())
