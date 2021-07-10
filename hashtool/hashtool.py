@@ -550,7 +550,10 @@ def detect_hash_tree_width_and_depth(*,
 
 @click.command()
 @click.argument("paths", type=str, nargs=-1)
-@click.option('--algorithm', 'algorithms', type=click.Choice(generate_hashlib_algorithm_set()), default='sha3_256', multiple=True)
+@click.option('--algorithm', 'algorithms',
+              type=click.Choice(generate_hashlib_algorithm_set()),
+              default=['sha3_256'],
+              multiple=True,)
 @click.option('--verbose', is_flag=True)
 @click.option('--debug', is_flag=True)
 @click.pass_context
