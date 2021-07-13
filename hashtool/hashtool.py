@@ -586,9 +586,15 @@ def cli(ctx,
 
         if verbose:
             ic(index, path)
-        result = hash_file_with_all_algorithms(path=path,
-                                               verbose=verbose,
-                                               debug=debug,)
-        ic(dir(result))
-        ic(result.hexdigests())
-        ic(list(result.hexdigests()))
+        result = rhash_file(path=path,
+                            algorithms=['sha1', 'sha3_256'],
+                            verbose=verbose,
+                            debug=debug,)
+        #result = hash_file_with_all_algorithms(path=path,
+        #                                       verbose=verbose,
+        #                                       debug=debug,)
+        #ic(dir(result))
+        #ic(result.hexdigests())
+        #ic(list(result.hexdigests()))
+        for key, value in result.items():
+            print(key, value, end=end.decode('utf8'))
