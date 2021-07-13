@@ -37,6 +37,7 @@ from typing import Sequence
 
 import attr
 import click
+from advisory_lock import AdvisoryLock
 from asserttool import eprint
 from asserttool import ic
 from asserttool import nevd
@@ -200,8 +201,18 @@ def rhash_file(path: Path,
     command.append(path.as_posix())
 
     #ic(command)
+    result = None
+    with AdvisoryLock(path=path,
+                      file_exists=True,
+                      open_read=True,
+                      open_write=True,  #lockf needs R/W
+                      flock=False,
+                      verbose=verbose,
+                      debug=debug,) as fl:
 
-    result = run_command(command, shell=True).decode('utf8')
+        result = run_command(command, shell=True).decode('utf8')
+
+    assert result
     #ic(result)
     results = result.split(' ')
     for result in results:
