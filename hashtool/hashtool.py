@@ -176,6 +176,7 @@ def rhash_file(path: Path,
                algorithms: Iterable,
                verbose: bool,
                debug: bool,
+               dont_lock: bool = False,
                ) -> dict:
     path = Path(path).expanduser().resolve()
     assert algorithms
@@ -202,16 +203,19 @@ def rhash_file(path: Path,
 
     #ic(command)
     result = None
-    with AdvisoryLock(path=path,
-                      file_exists=True,
-                      open_read=True,
-                      #open_write=True,  #lockf needs R/W
-                      open_write=False,  #lockf needs R/W
-                      flock=False,
-                      verbose=verbose,
-                      debug=debug,) as fl:
-
+    if dont_lock:
         result = run_command(command, shell=True).decode('utf8')
+    else:
+        with AdvisoryLock(path=path,
+                          file_exists=True,
+                          open_read=True,
+                          open_write=True,  #lockf needs R/W
+                          #open_write=False,  #lockf needs R/W
+                          flock=False,
+                          verbose=verbose,
+                          debug=debug,) as fl:
+
+            result = run_command(command, shell=True).decode('utf8')
 
     assert result
     #ic(result)
