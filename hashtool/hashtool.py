@@ -65,7 +65,8 @@ def emptyhash(alg):
     return emptyhexdigest
 
 
-def hexdigest_str_path_relative(hexdigest: str,
+def hexdigest_str_path_relative(*,
+                                hexdigest: str,
                                 width: int,
                                 depth: int,
                                 ) -> Path:
@@ -75,7 +76,8 @@ def hexdigest_str_path_relative(hexdigest: str,
     return rel_path
 
 
-def hexdigest_str_path(root: Path,
+def hexdigest_str_path(*,
+                       root: Path,
                        hexdigest: str,
                        width: int,
                        depth: int,
