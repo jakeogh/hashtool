@@ -1,3 +1,4 @@
+from .hashtool import Digest
 from .hashtool import emptyhash
 from .hashtool import generate_hashlib_algorithm_set
 from .hashtool import hash_bytes

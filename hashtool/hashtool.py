@@ -54,6 +54,41 @@ from run_command import run_command
 #        raise ValueError(thing)
 
 
+class Digest():
+    def __init__(self,
+                 algorithm: str,
+                 verbose: bool,
+                 debug: bool,
+                 digest: bytes,
+                 ):
+
+        #@singledispatch would be nice here, could pass bytes or str and not need to unhexlify
+        assert isinstance(digest, bytes)
+        self.digest = digest
+        self.hexdigest = digest.hex()
+        if debug:
+            ic(self.hexdigest)
+
+        #try:
+        #    int(hexdigest, 16)
+        #except ValueError:
+        #    raise ValueError('Invalid ID: "{0}" is not hex'.format(hexdigest))
+        self.algorithm = algorithm
+        #self.digest = binascii.unhexlify(self.hexdigest)
+        self.digestlen = hashlib.new(self.algorithm).digest_size
+        self.hexdigestlen = self.digestlen * 2
+        if len(self.digest) != self.digestlen:
+            msg = "hexdigest {} is not {} bytes long, as required by {}".format(self.hexdigest, self.hexdigestlen, self.algorithm)
+            raise ValueError(msg)
+            #raise ValueError('Invalid ID: "{}" is not {} digits long (len() is {})'.format(hexdigest, self.hexdigestlen,  len(hexdigest)))
+
+    def __str__(self):
+        return "<uhashfs.Digest " + self.hexdigest + ">"
+
+    def __repr__(self):
+        return str(self)
+
+
 # todo kcl.iterops breakout
 def compact(items):
     return [item for item in items if item]
