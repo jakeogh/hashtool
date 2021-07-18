@@ -40,7 +40,9 @@ import click
 from advisory_lock import AdvisoryLock
 from asserttool import eprint
 from asserttool import ic
+from asserttool import maxone
 from asserttool import nevd
+from asserttool import one
 from asserttool import verify
 from enumerate_input import enumerate_input
 from getdents import paths
@@ -59,12 +61,14 @@ class Digest():
                  algorithm: str,
                  verbose: bool,
                  debug: bool,
-                 digest: Optional[bytes],
+                 digest: Optional[bytes] = None,
                  preimage: Optional[bytes] = None,
                  ):
 
         self.algorithm = algorithm
         #@singledispatch would be nice here, could pass bytes or str and not need to unhexlify
+        maxone([digest, preimage])
+        one([digest, preimage])
         if digest:
             assert isinstance(digest, bytes)
         if preimage:
