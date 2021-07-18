@@ -59,11 +59,21 @@ class Digest():
                  algorithm: str,
                  verbose: bool,
                  debug: bool,
-                 digest: bytes,
+                 digest: Optional[bytes],
+                 preimage: Optional[bytes] = None,
                  ):
 
+        self.algorithm = algorithm
         #@singledispatch would be nice here, could pass bytes or str and not need to unhexlify
-        assert isinstance(digest, bytes)
+        if digest:
+            assert isinstance(digest, bytes)
+        if preimage:
+            assert isinstance(preimage, bytes)
+
+        if preimage:
+            assert digest is None
+            digest = getattr(hashlib, self.algorithm)(preimage).digest()
+
         self.digest = digest
         self.hexdigest = digest.hex()
         if debug:
@@ -73,7 +83,6 @@ class Digest():
         #    int(hexdigest, 16)
         #except ValueError:
         #    raise ValueError('Invalid ID: "{0}" is not hex'.format(hexdigest))
-        self.algorithm = algorithm
         #self.digest = binascii.unhexlify(self.hexdigest)
         self.digestlen = hashlib.new(self.algorithm).digest_size
         self.hexdigestlen = self.digestlen * 2
