@@ -256,6 +256,8 @@ def rhash_file(path: Path,
     if dont_lock:
         result = run_command(command, shell=True).decode('utf8')
     else:
+        if verbose:
+            ic(path)
         with AdvisoryLock(path=path,
                           file_exists=True,
                           open_read=True,
