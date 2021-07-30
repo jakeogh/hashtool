@@ -231,8 +231,8 @@ def rhash_file(path: Path,
                dont_lock: bool = False,
                ) -> dict:
 
-    ic(verbose, path, dont_lock)
-    assert verbose
+    #ic(verbose, path, dont_lock)
+    #assert verbose
     path = Path(path).expanduser().resolve()
     assert algorithms
     result_dict = {}
@@ -261,9 +261,9 @@ def rhash_file(path: Path,
     if dont_lock:
         result = run_command(command, shell=True).decode('utf8')
     else:
-        if verbose:
-            ic(path)
-        ic(verbose)
+        #if verbose:
+        #    ic(path)
+        #ic(verbose)
         with AdvisoryLock(path=path,
                           file_exists=True,
                           open_read=True,
