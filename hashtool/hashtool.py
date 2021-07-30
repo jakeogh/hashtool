@@ -263,6 +263,7 @@ def rhash_file(path: Path,
     else:
         if verbose:
             ic(path)
+        ic(verbose)
         with AdvisoryLock(path=path,
                           file_exists=True,
                           open_read=True,
