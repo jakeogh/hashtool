@@ -231,7 +231,7 @@ def rhash_file(path: Path,
                dont_lock: bool = False,
                ) -> dict:
 
-    ic(verbose)
+    ic(verbose, path, dont_lock)
     assert verbose
     path = Path(path).expanduser().resolve()
     assert algorithms
