@@ -40,6 +40,7 @@ import click
 from advisory_lock import AdvisoryLock
 from asserttool import eprint
 from asserttool import ic
+from asserttool import increment_debug
 from asserttool import maxone
 from asserttool import nevd
 from asserttool import one
@@ -221,6 +222,7 @@ def hash_file_handle(handle,
     return digest
 
 
+@increment_debug
 def rhash_file(path: Path,
                *,
                algorithms: Iterable,
