@@ -230,6 +230,7 @@ def rhash_file(path: Path,
                debug: bool,
                dont_lock: bool = False,
                ) -> dict:
+    assert verbose
     path = Path(path).expanduser().resolve()
     assert algorithms
     result_dict = {}
