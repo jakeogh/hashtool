@@ -259,9 +259,9 @@ def rhash_file(path: Path,
         with AdvisoryLock(path=path,
                           file_exists=True,
                           open_read=True,
-                          open_write=True,  #lockf needs R/W
-                          #open_write=False,  #lockf needs R/W
-                          flock=False,
+                          #open_write=True,  #lockf needs R/W
+                          open_write=False,  #lockf needs R/W
+                          flock=True,
                           verbose=verbose,
                           debug=debug,) as fl:
 
