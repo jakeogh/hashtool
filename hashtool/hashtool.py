@@ -221,6 +221,8 @@ def hash_file_handle(handle,
     handle.seek(pos)
     return digest
 
+import binascii
+
 
 @increment_debug
 def rhash_file(path: Path,
@@ -230,6 +232,23 @@ def rhash_file(path: Path,
                debug: bool,
                dont_lock: bool = False,
                ) -> dict:
+
+    def convert_digest_dict_to_objects(*,
+                                       digest_dict: dict,
+                                       verbose: bool,
+                                       debug: bool,
+                                       ):
+
+        digest_results = {}
+        for key, hexdigest in digest_dict.items():
+            #ic(hexdigest)
+            digest = binascii.unhexlify(hexdigest)
+            digest = Digest(algorithm=key,
+                            digest=digest,
+                            verbose=verbose,
+                            debug=debug,)
+            digest_results[key] = digest
+        return digest_results
 
     #ic(verbose, path, dont_lock)
     #assert verbose
@@ -288,7 +307,11 @@ def rhash_file(path: Path,
         ic(_path, result_dict)
         del _path
 
-    return result_dict
+    digest_results = convert_digest_dict_to_objects(digest_dict=result_dict,
+                                                    verbose=verbose,
+                                                    debug=debug,)
+
+    return digest_results
 
 
 @attr.s(auto_attribs=True)
