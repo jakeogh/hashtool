@@ -429,6 +429,8 @@ def sha1_hash_file(path, *,
 def sha3_256_hash_file(path,
                        block_size=256 * 128 * 2,
                        binary=False,
+                       verbose: bool = False,
+                       debug: bool = False,
                        ):
     sha3 = hashlib.sha3_256()
     with open(path, 'rb') as f:
