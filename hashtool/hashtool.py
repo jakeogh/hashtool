@@ -19,6 +19,7 @@
 # pylint: disable=R0916  # Too many boolean expressions in if statement
 
 
+import binascii
 import hashlib
 import os
 import subprocess
@@ -155,9 +156,10 @@ def generate_hashlib_algorithm_set():
     return list(alg_set)
 
 
-def hash_readable(handle,
+def hash_readable(*,
+                  handle,
                   algorithm: str,
-                  tmp,
+                  tmp: Optional[Path],
                   ) -> bytes:
     block_size = 256 * 128 * 2
     hashtool = hashlib.new(algorithm)
@@ -175,15 +177,15 @@ def hash_readable(handle,
 def hash_file(path: Path,
               *,
               algorithm: str,
-              tmp,
               verbose: bool,
               debug: bool,
+              tmp: Optional[Path] = None,
               ) -> bytes:
     path = Path(path).expanduser()
     fd = os.open(path, os.O_RDONLY)
     fh = os.fdopen(fd, 'rb')
     try:
-        digest = hash_readable(fh, algorithm, tmp)
+        digest = hash_readable(handle=fh, algorithm=algorithm, tmp=tmp)
     except Exception as e:
         os.posix_fadvise(fd, 0, 0, os.POSIX_FADV_DONTNEED)
         fh.close()
@@ -208,20 +210,6 @@ def hash_file_with_all_algorithms(path: Path,
     return hashtool
 
 
-def hash_file_handle(handle,
-                     *,
-                     algorithm: str,
-                     tmp,
-                     verbose: bool,
-                     debug: bool,
-                     ):
-    assert False
-    pos = handle.tell()
-    digest = hash_readable(handle, algorithm, tmp)
-    handle.seek(pos)
-    return digest
-
-import binascii
 
 
 @increment_debug
