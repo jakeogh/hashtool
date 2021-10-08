@@ -104,6 +104,19 @@ class Digest():
         return str(self)
 
 
+def md5_hash_file(path,
+                  *,
+                  block_size=256 * 128 * 2,
+                  verbose: bool,
+                  debug: bool,
+                  ):
+    md5 = hashlib.md5()
+    with open(path, 'rb') as f:
+        for chunk in iter(lambda: f.read(block_size), b''):
+            md5.update(chunk)
+    return md5.hexdigest()
+
+
 # todo kcl.iterops breakout
 def compact(items):
     return [item for item in items if item]
