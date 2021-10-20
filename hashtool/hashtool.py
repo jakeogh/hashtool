@@ -223,8 +223,6 @@ def hash_file_with_all_algorithms(path: Path,
     return hashtool
 
 
-
-
 @increment_debug
 def rhash_file(path: Path,
                *,
@@ -675,11 +673,6 @@ def cli(ctx,
     iterator = files
 
     for index, path in enumerate_input(iterator=iterator,
-                                       null=null,
-                                       progress=False,
-                                       skip=None,
-                                       head=None,
-                                       tail=None,
                                        debug=debug,
                                        verbose=verbose,):
         path = Path(path).expanduser()
