@@ -52,11 +52,6 @@ from requests.models import Response
 from retry_on_exception import retry_on_exception
 from run_command import run_command
 
-## todo kcl.assertops breakout
-#def verify(thing):
-#    if not thing:
-#        raise ValueError(thing)
-
 
 class Digest():
     def __init__(self,
@@ -437,12 +432,14 @@ def sha1_hash_file(path, *,
     return sha1.hexdigest()
 
 
-def sha3_256_hash_file(path,
-                       block_size=256 * 128 * 2,
-                       binary=False,
+def sha3_256_hash_file(path: Path,
+                       block_size: int = 256 * 128 * 2,
+                       binary: bool = False,
                        verbose: bool = False,
                        debug: bool = False,
-                       ):
+                       ) -> str:
+    if verbose:
+        ic(path)
     sha3 = hashlib.sha3_256()
     with open(path, 'rb') as f:
         for chunk in iter(lambda: f.read(block_size), b''):
