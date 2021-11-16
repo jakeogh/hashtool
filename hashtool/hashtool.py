@@ -123,13 +123,21 @@ def emptyhash(alg):
     return emptyhexdigest
 
 
+def hash_str(string: str):
+    digest = getattr(hashlib, 'sha3_256')(string.encode('utf8')).digest()
+    #hexdigest = digest.hex()
+    return digest
+
+
 def hexdigest_str_path_relative(*,
                                 hexdigest: str,
                                 width: int,
                                 depth: int,
                                 ) -> Path:
 
-    path_elements = shard(hexdigest, width=width, depth=depth)
+    path_elements = shard(hexdigest,
+                          width=width,
+                          depth=depth,)
     rel_path = Path(os.path.join(*path_elements))
     return rel_path
 
@@ -668,7 +676,6 @@ def cli(ctx,
                                      debug=debug,)
 
     iterator = files
-
     for index, path in enumerate_input(iterator=iterator,
                                        debug=debug,
                                        verbose=verbose,):
@@ -680,11 +687,6 @@ def cli(ctx,
                             algorithms=['sha1', 'sha3_256'],
                             verbose=verbose,
                             debug=debug,)
-        #result = hash_file_with_all_algorithms(path=path,
-        #                                       verbose=verbose,
-        #                                       debug=debug,)
-        #ic(dir(result))
-        #ic(result.hexdigests())
-        #ic(list(result.hexdigests()))
+
         for key, value in result.items():
             print(key, value, end=end.decode('utf8'))
