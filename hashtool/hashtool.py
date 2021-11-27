@@ -29,12 +29,11 @@ from itertools import product
 from pathlib import Path
 from queue import Queue
 from threading import Thread
-from typing import ByteString
-from typing import Generator
+#from typing import List
+#from typing import ByteString
+#from typing import Generator
 from typing import Iterable
-from typing import List
 from typing import Optional
-from typing import Sequence
 
 import attr
 import click
@@ -51,6 +50,9 @@ from getdents import paths
 from requests.models import Response
 from retry_on_exception import retry_on_exception
 from run_command import run_command
+
+#from typing import Sequence
+
 
 
 class Digest():
