@@ -281,7 +281,7 @@ def rhash_file(path: Path,
             raise NotImplementedError(algorithm)
 
     format_string = ' '.join(format_string)
-    format_string = '--printf="{}"'.format(format_string)
+    format_string = '--printf={}'.format(format_string)
     #command.append(format_string)
     rhash_command = rhash_command.bake(format_string)
     #command.append(path.as_posix())
