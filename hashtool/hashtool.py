@@ -292,8 +292,9 @@ def rhash_file(path: Path,
 
     result = None
     if dont_lock:
+        rhash_command_result = rhash_command()
+        ic(rhash_command_result)
         result = run_command(command, shell=True).decode('utf8')
-        rhash_result = rhash_command()
     else:
         #if verbose:
         #    ic(path)
@@ -307,12 +308,14 @@ def rhash_file(path: Path,
                           verbose=verbose,
                           debug=debug,) as fl:
 
+            rhash_command_result = rhash_command()
+            ic(rhash_command_result)
             result = run_command(command, shell=True).decode('utf8')
-            rhash_result = rhash_command()
 
     assert result
-    assert rhash_result
-    ic(rhash_result)
+    assert rhash_command_result
+    ic(result)
+    ic(rhash_command_result)
     results = result.split(' ')
     for result in results:
         #ic(result)
