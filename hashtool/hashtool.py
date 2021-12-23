@@ -37,6 +37,7 @@ from typing import Optional
 
 import attr
 import click
+import sh
 from advisory_lock import AdvisoryLock
 from asserttool import eprint
 from asserttool import ic
@@ -51,8 +52,9 @@ from requests.models import Response
 from retry_on_exception import retry_on_exception
 from run_command import run_command
 
-#from typing import Sequence
+#from pydantic import BaseModel
 
+#from typing import Sequence
 
 
 class Digest():
@@ -261,15 +263,19 @@ def rhash_file(path: Path,
     result_dict = {}
     format_string = []
     command = ['rhash',]
+    rhash_command = sh.Command('rhash')
     for algorithm in algorithms:
         if algorithm == 'sha3_256':
             command.append('--sha3-256')
+            rhash_command = rhash_command.bake('--sha3-256')
             format_string.append('sha3_256:%{sha3-256}')
         elif algorithm == 'sha256':
             command.append('--sha256')
+            rhash_command = rhash_command.bake('--sha256')
             format_string.append('sha256:%{sha-256}')
         elif algorithm == 'sha1':
             command.append('--sha1')
+            rhash_command = rhash_command.bake('--sha1')
             format_string.append('sha1:%{sha1}')
         else:
             raise NotImplementedError(algorithm)
@@ -277,12 +283,17 @@ def rhash_file(path: Path,
     format_string = ' '.join(format_string)
     format_string = '--printf="{}"'.format(format_string)
     command.append(format_string)
+    rhash_command = rhash_command.bake(format_string)
     command.append(path.as_posix())
+    rhash_command = rhash_command.bake(path.as_posix())
 
-    #ic(command)
+    ic(rhash_command)
+
+
     result = None
     if dont_lock:
         result = run_command(command, shell=True).decode('utf8')
+        rhash_result = rhash_command()
     else:
         #if verbose:
         #    ic(path)
@@ -297,9 +308,11 @@ def rhash_file(path: Path,
                           debug=debug,) as fl:
 
             result = run_command(command, shell=True).decode('utf8')
+            rhash_result = rhash_command()
 
     assert result
-    #ic(result)
+    assert rhash_result
+    ic(rhash_result)
     results = result.split(' ')
     for result in results:
         #ic(result)
