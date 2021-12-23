@@ -289,7 +289,6 @@ def rhash_file(path: Path,
 
     ic(rhash_command)
 
-
     rhash_command_result = None
     if dont_lock:
         rhash_command_result = rhash_command()
@@ -318,7 +317,7 @@ def rhash_file(path: Path,
     ic(rhash_command_result)
     results = rhash_command_result.split(' ')
     for result in results:
-        #ic(result)
+        ic(result)
         alg, hexdigest = result.split(':')
         result_dict[alg] = hexdigest
 
@@ -327,6 +326,7 @@ def rhash_file(path: Path,
         ic(_path, result_dict)
         del _path
 
+    ic(result_dict)
     digest_results = convert_digest_dict_to_objects(digest_dict=result_dict,
                                                     verbose=verbose,
                                                     debug=debug,)
