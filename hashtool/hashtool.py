@@ -45,12 +45,10 @@ from asserttool import increment_debug
 from asserttool import maxone
 from asserttool import nevd
 from asserttool import one
-from asserttool import verify
 from enumerate_input import enumerate_input
 from getdents import paths
 from requests.models import Response
 from retry_on_exception import retry_on_exception
-from run_command import run_command
 
 #from pydantic import BaseModel
 
@@ -632,19 +630,19 @@ def hex_dict_file(path, verbose: bool, debug: bool,):
 
 
 def detect_hash_tree_width_and_depth(*,
-                                     root,
+                                     root: Path,
                                      alg: str,
                                      verbose: bool,
                                      debug: bool,
                                      max_width: int = 5,
                                      max_depth: int = 5,
                                      ):
-    verify(isinstance(root, Path))
+    assert isinstance(root, Path)
     #empty_hexdigest = emptyhash(alg)
     #empty_hexdigest_length = len(empty_hexdigest)
     width = 0
     depth = 0
-    verify(alg == root.name)
+    assert alg == root.name
 
     for path in paths(path=root,
                       names_only=False,
