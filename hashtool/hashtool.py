@@ -26,6 +26,7 @@ import subprocess
 import sys
 import tempfile
 from itertools import product
+from math import inf
 from pathlib import Path
 from queue import Queue
 from threading import Thread
@@ -45,6 +46,9 @@ from asserttool import increment_debug
 from asserttool import maxone
 from asserttool import nevd
 from asserttool import one
+from asserttool import tv
+from clicktool import click_add_options
+from clicktool import click_global_options
 from enumerate_input import enumerate_input
 from getdents import paths
 from requests.models import Response
@@ -59,7 +63,6 @@ class Digest():
     def __init__(self,
                  algorithm: str,
                  verbose: bool,
-                 debug: bool,
                  digest: Optional[bytes] = None,
                  preimage: Optional[bytes] = None,
                  ):
@@ -79,7 +82,7 @@ class Digest():
 
         self.digest = digest
         self.hexdigest = digest.hex()
-        if debug:
+        if verbose == inf:
             ic(self.hexdigest)
 
         #try:
@@ -105,7 +108,6 @@ def md5_hash_file(path,
                   *,
                   block_size=256 * 128 * 2,
                   verbose: bool,
-                  debug: bool,
                   ):
     md5 = hashlib.md5()
     with open(path, 'rb') as f:
@@ -196,7 +198,6 @@ def hash_file(path: Path,
               *,
               algorithm: str,
               verbose: bool,
-              debug: bool,
               tmp: Optional[Path] = None,
               ) -> bytes:
     path = Path(path).expanduser()
@@ -217,7 +218,6 @@ def hash_file(path: Path,
 def hash_file_with_all_algorithms(path: Path,
                                   *,
                                   verbose: bool,
-                                  debug: bool,
                                   ):
     if verbose:
         ic(path)
@@ -233,14 +233,12 @@ def rhash_file(path: Path,
                *,
                algorithms: Iterable,
                verbose: bool,
-               debug: bool,
                dont_lock: bool = False,
                ) -> dict:
 
     def convert_digest_dict_to_objects(*,
                                        digest_dict: dict,
                                        verbose: bool,
-                                       debug: bool,
                                        ):
 
         digest_results = {}
@@ -250,7 +248,7 @@ def rhash_file(path: Path,
             digest = Digest(algorithm=key,
                             digest=digest,
                             verbose=verbose,
-                            debug=debug,)
+                            )
             digest_results[key] = digest
         return digest_results
 
@@ -303,7 +301,7 @@ def rhash_file(path: Path,
                           open_write=False,  #lockf needs R/W
                           flock=True,
                           verbose=verbose,
-                          debug=debug,) as fl:
+                          ) as fl:
 
             rhash_command_result = rhash_command()
             #ic(rhash_command_result)
@@ -319,7 +317,7 @@ def rhash_file(path: Path,
         alg, hexdigest = result.split(':')
         result_dict[alg] = hexdigest
 
-    if debug:
+    if verbose == inf:
         _path = path.as_posix()
         ic(_path, result_dict)
         del _path
@@ -327,7 +325,7 @@ def rhash_file(path: Path,
     #ic(result_dict)
     digest_results = convert_digest_dict_to_objects(digest_dict=result_dict,
                                                     verbose=verbose,
-                                                    debug=debug,)
+                                                    )
 
     return digest_results
 
@@ -352,7 +350,6 @@ class WDgen():
 
 def generate_hash(data, *,
                   verbose: bool,
-                  debug: bool,
                   ):
     if not data:
         raise ValueError
@@ -443,7 +440,6 @@ def generate_hash(data, *,
 
 def sha1_hash_file(path, *,
                    verbose: bool,
-                   debug: bool,
                    block_size=256 * 128 * 2,
                    binary=False,
                    ):
@@ -460,7 +456,6 @@ def sha3_256_hash_file(path: Path,
                        block_size: int = 256 * 128 * 2,
                        binary: bool = False,
                        verbose: bool = False,
-                       debug: bool = False,
                        ) -> str:
     if verbose:
         ic(path)
@@ -605,9 +600,11 @@ def hash_bytes(byte_string):
     return hashtool
 
 
-def bytes_dict_file(path, verbose: bool, debug: bool,):
+def bytes_dict_file(path,
+                    verbose: bool,
+                    ):
     bytes_dict = {}
-    hashtool = hash_file_with_all_algorithms(path=path, verbose=verbose, debug=debug,)
+    hashtool = hash_file_with_all_algorithms(path=path, verbose=verbose,)
     for algo, digest in hashtool.digests():
         bytes_dict[algo] = digest
     return bytes_dict
@@ -621,9 +618,11 @@ def bytes_dict_bytes(byte_string):
     return bytes_dict
 
 
-def hex_dict_file(path, verbose: bool, debug: bool,):
+def hex_dict_file(path,
+                  verbose: bool,
+                  ):
     bytes_dict = {}
-    hashtool = hash_file_with_all_algorithms(path=path, verbose=verbose, debug=debug,)
+    hashtool = hash_file_with_all_algorithms(path=path, verbose=verbose,)
     for algo, digest in hashtool.hexdigests():
         bytes_dict[algo] = digest
     return bytes_dict
@@ -633,7 +632,6 @@ def detect_hash_tree_width_and_depth(*,
                                      root: Path,
                                      alg: str,
                                      verbose: bool,
-                                     debug: bool,
                                      max_width: int = 5,
                                      max_depth: int = 5,
                                      ):
@@ -650,7 +648,6 @@ def detect_hash_tree_width_and_depth(*,
                       return_files=True,
                       return_symlinks=True,
                       verbose=verbose,
-                      debug=debug,
                       ):
         path = path.pathlib
         #ic(path)
@@ -675,25 +672,25 @@ def detect_hash_tree_width_and_depth(*,
               type=click.Choice(generate_hashlib_algorithm_set()),
               default=['sha3_256'],
               multiple=True,)
-@click.option('--verbose', is_flag=True)
-@click.option('--debug', is_flag=True)
+@click_add_options(click_global_options)
 @click.pass_context
 def cli(ctx,
         files: tuple[str],
         algorithms: tuple[str],
-        verbose: bool,
-        debug: bool,
+        verbose: int,
+        verbose_inf: bool,
         ):
 
-    null, end, verbose, debug = nevd(ctx=ctx,
-                                     printn=False,
-                                     ipython=False,
-                                     verbose=verbose,
-                                     debug=debug,)
+    tty, verbose = tv(ctx=ctx,
+                      verbose=verbose,
+                      verbose_inf=verbose_inf,
+                      )
+    end = b'\n'
+    if not tty:
+        end = b'\0'
 
     iterator = files
     for index, path in enumerate_input(iterator=iterator,
-                                       debug=debug,
                                        verbose=verbose,):
         path = Path(path).expanduser()
 
@@ -702,7 +699,7 @@ def cli(ctx,
         result = rhash_file(path=path,
                             algorithms=['sha1', 'sha3_256'],
                             verbose=verbose,
-                            debug=debug,)
+                            )
 
         for key, value in result.items():
             print(key, value, end=end.decode('utf8'))
