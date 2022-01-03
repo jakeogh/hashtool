@@ -40,19 +40,21 @@ import attr
 import click
 import sh
 from advisory_lock import AdvisoryLock
+#from asserttool import nevd
 from asserttool import eprint
 from asserttool import ic
 from asserttool import increment_debug
 from asserttool import maxone
-from asserttool import nevd
 from asserttool import one
 from asserttool import tv
 from clicktool import click_add_options
 from clicktool import click_global_options
-from enumerate_input import enumerate_input
+#from enumerate_input import enumerate_input
 from getdents import paths
+from printtool import output
 from requests.models import Response
 from retry_on_exception import retry_on_exception
+from unmp import unmp
 
 #from pydantic import BaseModel
 
@@ -689,9 +691,13 @@ def cli(ctx,
     if not tty:
         end = b'\0'
 
-    iterator = files
-    for index, path in enumerate_input(iterator=iterator,
-                                       verbose=verbose,):
+    if files:
+        iterator = files
+    else:
+        iterator = unmp(valid_types=[bool,], verbose=verbose)
+    #for index, path in enumerate_input(iterator=iterator,
+    #                                   verbose=verbose,):
+    for index, path in enumerate(iterator):
         path = Path(path).expanduser()
 
         if verbose:
@@ -702,4 +708,5 @@ def cli(ctx,
                             )
 
         for key, value in result.items():
-            print(key, value, end=end.decode('utf8'))
+            output({key: value}, tty=tty, verbose=verbose)
+            #print(key, value, end=end.decode('utf8'))
