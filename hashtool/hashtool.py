@@ -328,7 +328,6 @@ def rhash_file(path: Path,
     digest_results = convert_digest_dict_to_objects(digest_dict=result_dict,
                                                     verbose=verbose,
                                                     )
-
     return digest_results
 
 
