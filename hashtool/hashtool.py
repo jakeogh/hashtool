@@ -32,6 +32,7 @@ from queue import Queue
 from threading import Thread
 from typing import Iterable
 from typing import Optional
+from typing import Union
 
 import attr
 import click
@@ -59,7 +60,7 @@ from unmp import unmp
 class Digest():
     def __init__(self,
                  algorithm: str,
-                 verbose: int,
+                 verbose: Union[bool, int, float],
                  digest: Optional[bytes] = None,
                  preimage: Optional[bytes] = None,
                  ):
@@ -104,7 +105,7 @@ class Digest():
 def md5_hash_file(path,
                   *,
                   block_size=256 * 128 * 2,
-                  verbose: int,
+                  verbose: Union[bool, int, float],
                   ):
     md5 = hashlib.md5()
     with open(path, 'rb') as f:
@@ -194,7 +195,7 @@ def hash_readable(*,
 def hash_file(path: Path,
               *,
               algorithm: str,
-              verbose: int,
+              verbose: Union[bool, int, float],
               tmp: Optional[Path] = None,
               ) -> bytes:
     path = Path(path).expanduser()
@@ -214,7 +215,7 @@ def hash_file(path: Path,
 
 def hash_file_with_all_algorithms(path: Path,
                                   *,
-                                  verbose: int,
+                                  verbose: Union[bool, int, float],
                                   ):
     if verbose:
         ic(path)
@@ -229,13 +230,13 @@ def hash_file_with_all_algorithms(path: Path,
 def rhash_file(path: Path,
                *,
                algorithms: Iterable,
-               verbose: int,
+               verbose: Union[bool, int, float],
                dont_lock: bool = False,
                ) -> dict:
 
     def convert_digest_dict_to_objects(*,
                                        digest_dict: dict,
-                                       verbose: int,
+                                       verbose: Union[bool, int, float],
                                        ):
 
         digest_results = {}
@@ -345,7 +346,7 @@ class WDgen():
 
 
 def generate_hash(data, *,
-                  verbose: int,
+                  verbose: Union[bool, int, float],
                   ):
     if not data:
         raise ValueError
@@ -435,7 +436,7 @@ def generate_hash(data, *,
 
 
 def sha1_hash_file(path, *,
-                   verbose: int,
+                   verbose: Union[bool, int, float],
                    block_size=256 * 128 * 2,
                    binary=False,
                    ):
@@ -597,7 +598,7 @@ def hash_bytes(byte_string):
 
 
 def bytes_dict_file(path,
-                    verbose: int,
+                    verbose: Union[bool, int, float],
                     ):
     bytes_dict = {}
     hashtool = hash_file_with_all_algorithms(path=path, verbose=verbose,)
@@ -615,7 +616,7 @@ def bytes_dict_bytes(byte_string):
 
 
 def hex_dict_file(path,
-                  verbose: int,
+                  verbose: Union[bool, int, float],
                   ):
     bytes_dict = {}
     hashtool = hash_file_with_all_algorithms(path=path, verbose=verbose,)
@@ -627,7 +628,7 @@ def hex_dict_file(path,
 def detect_hash_tree_width_and_depth(*,
                                      root: Path,
                                      alg: str,
-                                     verbose: int,
+                                     verbose: Union[bool, int, float],
                                      max_width: int = 5,
                                      max_depth: int = 5,
                                      ):
@@ -672,7 +673,7 @@ def detect_hash_tree_width_and_depth(*,
 def cli(ctx,
         files: tuple[str],
         algorithms: tuple[str],
-        verbose: int,
+        verbose: Union[bool, int, float],
         verbose_inf: bool,
         ):
 
