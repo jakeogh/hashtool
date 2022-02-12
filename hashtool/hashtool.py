@@ -46,7 +46,7 @@ from asserttool import tv
 from clicktool import click_add_options
 from clicktool import click_global_options
 from getdents import paths
-from printtool import output
+from mptool import output
 from requests.models import Response
 from retry_on_exception import retry_on_exception
 from unmp import unmp
