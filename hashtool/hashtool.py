@@ -38,14 +38,14 @@ import attr
 import click
 import sh
 from advisory_lock import AdvisoryLock
-from asserttool import eprint
 from asserttool import ic
 from asserttool import increment_debug
 from asserttool import maxone
 from asserttool import one
-from asserttool import tv
 from clicktool import click_add_options
 from clicktool import click_global_options
+from clicktool import tv
+from eprint import eprint
 from getdents import paths
 from mptool import output
 from requests.models import Response
