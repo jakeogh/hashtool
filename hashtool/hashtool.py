@@ -135,6 +135,7 @@ def hexdigest_str_path_relative(*,
                                 hexdigest: str,
                                 width: int,
                                 depth: int,
+                                verbose: Union[bool, int, float],
                                 ) -> Path:
 
     path_elements = shard(hexdigest,
@@ -149,12 +150,15 @@ def hexdigest_str_path(*,
                        hexdigest: str,
                        width: int,
                        depth: int,
+                       verbose: Union[bool, int, float],
                        ) -> Path:
 
     root = Path(root).expanduser().resolve()
     rel_path = hexdigest_str_path_relative(hexdigest=hexdigest,
                                            width=width,
-                                           depth=depth,)
+                                           depth=depth,
+                                           verbose=verbose,
+                                           )
     path = root / rel_path
     return path
 
@@ -178,6 +182,7 @@ def hash_readable(*,
                   handle,
                   algorithm: str,
                   tmp: Optional[Path],
+                  verbose: Union[bool, int, float],
                   ) -> bytes:
     block_size = 256 * 128 * 2
     hashtool = hashlib.new(algorithm)
@@ -195,14 +200,14 @@ def hash_readable(*,
 def hash_file(path: Path,
               *,
               algorithm: str,
-              verbose: Union[bool, int, float],
               tmp: Optional[Path] = None,
+              verbose: Union[bool, int, float],
               ) -> bytes:
     path = Path(path).expanduser()
     fd = os.open(path, os.O_RDONLY)
     fh = os.fdopen(fd, 'rb')
     try:
-        digest = hash_readable(handle=fh, algorithm=algorithm, tmp=tmp)
+        digest = hash_readable(handle=fh, algorithm=algorithm, tmp=tmp, verbose=verbose,)
     except Exception as e:
         os.posix_fadvise(fd, 0, 0, os.POSIX_FADV_DONTNEED)
         fh.close()
@@ -450,19 +455,16 @@ def sha1_hash_file(path, *,
 
 
 def sha3_256_hash_file(path: Path,
+                       verbose: Union[bool, int, float],
                        block_size: int = 256 * 128 * 2,
-                       binary: bool = False,
-                       verbose: int = False,
-                       ) -> str:
+                       ) -> bytes:
     if verbose:
         ic(path)
     sha3 = hashlib.sha3_256()
     with open(path, 'rb') as f:
         for chunk in iter(lambda: f.read(block_size), b''):
             sha3.update(chunk)
-    if binary:
-        return sha3.digest()
-    return sha3.hexdigest()
+    return sha3.digest()
 
 
 def get_openssl_hash_algs_real():
