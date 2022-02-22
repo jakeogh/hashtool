@@ -785,7 +785,7 @@ def cli(
             else:
                 output(
                     value.digest,
-                    reason=None,
+                    reason=path.as_posix(),
                     dict_input=dict_input,
                     tty=tty,
                     verbose=verbose,
