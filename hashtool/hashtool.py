@@ -29,6 +29,9 @@ from itertools import product
 from math import inf
 from pathlib import Path
 from queue import Queue
+from signal import SIG_DFL
+from signal import SIGPIPE
+from signal import signal
 from threading import Thread
 from typing import Iterable
 from typing import Optional
@@ -55,6 +58,7 @@ from retry_on_exception import retry_on_exception
 # from pydantic import BaseModel
 
 # from typing import Sequence
+signal(SIGPIPE, SIG_DFL)
 
 
 class Digest:
