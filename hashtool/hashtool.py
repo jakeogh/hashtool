@@ -774,10 +774,19 @@ def cli(
         )
 
         for key, value in result.items():
-            output(
-                {key: value},
-                reason=None,
-                dict_input=dict_input,
-                tty=tty,
-                verbose=verbose,
-            )
+            if len(algorithms) > 1:
+                output(
+                    {key: value},
+                    reason=None,
+                    dict_input=dict_input,
+                    tty=tty,
+                    verbose=verbose,
+                )
+            else:
+                output(
+                    value.digest,
+                    reason=None,
+                    dict_input=dict_input,
+                    tty=tty,
+                    verbose=verbose,
+                )
