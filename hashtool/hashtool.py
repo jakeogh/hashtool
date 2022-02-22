@@ -763,7 +763,7 @@ def cli(
         )
 
     for index, _path in enumerate(iterator):
-        path = Path(_path).expanduser()
+        path = Path(os.fsdecode(_path)).expanduser()
 
         if verbose:
             ic(index, path)
