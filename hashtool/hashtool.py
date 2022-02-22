@@ -757,7 +757,7 @@ def cli(
     else:
         iterator = unmp(
             valid_types=[
-                bool,
+                bytes,
             ],
             verbose=verbose,
         )
@@ -769,7 +769,7 @@ def cli(
             ic(index, path)
         result = rhash_file(
             path=path,
-            algorithms=["sha1", "sha3_256"],
+            algorithms=algorithms,
             verbose=verbose,
         )
 
