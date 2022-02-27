@@ -257,9 +257,9 @@ def hash_file_with_all_algorithms(
 def rhash_file(
     path: Path,
     *,
+    dont_lock: bool,
     algorithms: Iterable,
     verbose: Union[bool, int, float],
-    dont_lock: bool = False,
 ) -> dict:
     def convert_digest_dict_to_objects(
         *,
@@ -740,11 +740,13 @@ def detect_hash_tree_width_and_depth(
     default=["sha3_256"],
     multiple=True,
 )
+@click.option("--dont-lock", is_flag=True)
 @click_add_options(click_global_options)
 @click.pass_context
 def cli(
     ctx,
     files: tuple[str],
+    dont_lock: bool,
     algorithms: tuple[str],
     verbose: Union[bool, int, float],
     verbose_inf: bool,
@@ -773,6 +775,7 @@ def cli(
             ic(index, path)
         result = rhash_file(
             path=path,
+            dont_lock=dont_lock,
             algorithms=algorithms,
             verbose=verbose,
         )
