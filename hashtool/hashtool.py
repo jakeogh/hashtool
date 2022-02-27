@@ -784,7 +784,7 @@ def cli(
             if len(algorithms) > 1:
                 output(
                     {key: value},
-                    reason=None,
+                    reason=_path,
                     dict_input=dict_input,
                     tty=tty,
                     verbose=verbose,
@@ -792,7 +792,7 @@ def cli(
             else:
                 output(
                     value.digest,
-                    reason=path.as_posix(),
+                    reason=_path,
                     dict_input=dict_input,
                     tty=tty,
                     verbose=verbose,
