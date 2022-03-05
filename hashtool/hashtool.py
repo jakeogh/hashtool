@@ -108,6 +108,14 @@ class Digest:
     def __repr__(self):
         return str(self)
 
+    def __len__(self):
+        return len(self.digest)
+
+    def __eq__(self, other):
+        if self.digest == other.digest:
+            return True
+        return False
+
 
 def md5_hash_file(
     path,
