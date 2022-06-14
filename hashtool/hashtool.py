@@ -265,7 +265,7 @@ def hash_file_with_all_algorithms(
 def rhash_file(
     path: Path,
     *,
-    dont_lock: bool,
+    disable_locking: bool,
     algorithms: Iterable,
     verbose: Union[bool, int, float],
 ) -> dict:
@@ -287,7 +287,7 @@ def rhash_file(
             digest_results[key] = digest
         return digest_results
 
-    ic(verbose, path, dont_lock)
+    ic(verbose, path, disable_locking)
     # assert verbose
     path = Path(path).expanduser().resolve()
     assert algorithms
@@ -321,7 +321,7 @@ def rhash_file(
     # ic(rhash_command)
 
     rhash_command_result = None
-    if dont_lock:
+    if disable_locking:
         rhash_command_result = rhash_command()
         # ic(rhash_command_result)
         # result = run_command(command, shell=True).decode('utf8')
@@ -748,13 +748,13 @@ def detect_hash_tree_width_and_depth(
     default=["sha3_256"],
     multiple=True,
 )
-@click.option("--dont-lock", is_flag=True)
+@click.option("--disable-locking", is_flag=True)
 @click_add_options(click_global_options)
 @click.pass_context
 def cli(
     ctx,
     files: tuple[str],
-    dont_lock: bool,
+    disable_locking: bool,
     algorithms: tuple[str],
     verbose: Union[bool, int, float],
     verbose_inf: bool,
@@ -783,7 +783,7 @@ def cli(
             ic(index, path)
         result = rhash_file(
             path=path,
-            dont_lock=dont_lock,
+            disable_locking=disable_locking,
             algorithms=algorithms,
             verbose=verbose,
         )
