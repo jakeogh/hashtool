@@ -287,7 +287,7 @@ def rhash_file(
             digest_results[key] = digest
         return digest_results
 
-    # ic(verbose, path, dont_lock)
+    ic(verbose, path, dont_lock)
     # assert verbose
     path = Path(path).expanduser().resolve()
     assert algorithms
@@ -312,7 +312,7 @@ def rhash_file(
             raise NotImplementedError(algorithm)
 
     format_string = " ".join(format_string)
-    format_string = "--printf={}".format(format_string)
+    format_string = f"--printf={format_string}"
     # command.append(format_string)
     rhash_command = rhash_command.bake(format_string)
     # command.append(path.as_posix())
@@ -561,7 +561,7 @@ def read_blocks(filename):
     else:
         f = open(filename, "rb")
     try:
-        megabyte = 2 ** 20
+        megabyte = 2**20
         while True:
             data = f.read(megabyte)
             if not data:
