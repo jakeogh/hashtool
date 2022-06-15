@@ -287,7 +287,8 @@ def rhash_file(
             digest_results[key] = digest
         return digest_results
 
-    ic(verbose, path, disable_locking)
+    if verbose == inf:
+        ic(disable_locking, path)
     # assert verbose
     path = Path(path).expanduser().resolve()
     assert algorithms
