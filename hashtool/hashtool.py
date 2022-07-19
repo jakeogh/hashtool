@@ -1,23 +1,24 @@
 #!/usr/bin/env python3
 # -*- coding: utf8 -*-
 
-# pylint: disable=C0111  # docstrings are always outdated and wrong
-# pylint: disable=W0511  # todo is encouraged
-# pylint: disable=C0301  # line too long
-# pylint: disable=R0902  # too many instance attributes
-# pylint: disable=C0302  # too many lines in module
-# pylint: disable=C0103  # single letter var names, func name too descriptive
-# pylint: disable=R0911  # too many return statements
-# pylint: disable=R0912  # too many branches
-# pylint: disable=R0915  # too many statements
-# pylint: disable=R0913  # too many arguments
-# pylint: disable=R1702  # too many nested blocks
-# pylint: disable=R0914  # too many local variables
-# pylint: disable=R0903  # too few public methods
-# pylint: disable=E1101  # no member for base
-# pylint: disable=W0201  # attribute defined outside __init__
-# pylint: disable=R0916  # Too many boolean expressions in if statement
+# pylint: disable=missing-docstring               # [C0111] docstrings are always outdated and wrong
+# pylint: disable=fixme                           # [W0511] todo is encouraged
+# pylint: disable=line-too-long                   # [C0301]
+# pylint: disable=too-many-instance-attributes    # [R0902]
+# pylint: disable=too-many-lines                  # [C0302] too many lines in module
+# pylint: disable=invalid-name                    # [C0103] single letter var names, name too descriptive
+# pylint: disable=too-many-return-statements      # [R0911]
+# pylint: disable=too-many-branches               # [R0912]
+# pylint: disable=too-many-statements             # [R0915]
+# pylint: disable=too-many-arguments              # [R0913]
+# pylint: disable=too-many-nested-blocks          # [R1702]
+# pylint: disable=too-many-locals                 # [R0914]
+# pylint: disable=too-few-public-methods          # [R0903]
+# pylint: disable=no-member                       # [E1101] no member for base
+# pylint: disable=attribute-defined-outside-init  # [W0201]
+# pylint: disable=too-many-boolean-expressions    # [R0916] in if statement
 
+from __future__ import annotations
 
 import binascii
 import hashlib
@@ -34,8 +35,6 @@ from signal import SIGPIPE
 from signal import signal
 from threading import Thread
 from typing import Iterable
-from typing import Optional
-from typing import Union
 
 import attr
 import click
@@ -57,7 +56,7 @@ from retry_on_exception import retry_on_exception
 
 # from pydantic import BaseModel
 
-# from typing import Sequence
+# from collections.abc import Sequence
 signal(SIGPIPE, SIG_DFL)
 
 
@@ -65,9 +64,9 @@ class Digest:
     def __init__(
         self,
         algorithm: str,
-        verbose: Union[bool, int, float],
-        digest: Optional[bytes] = None,
-        preimage: Optional[bytes] = None,
+        verbose: bool | int | float,
+        digest: None | bytes = None,
+        preimage: None | bytes = None,
     ):
 
         self.algorithm = algorithm
@@ -121,7 +120,7 @@ def md5_hash_file(
     path,
     *,
     block_size=256 * 128 * 2,
-    verbose: Union[bool, int, float],
+    verbose: bool | int | float,
 ):
     md5 = hashlib.md5()
     with open(path, "rb") as f:
@@ -152,7 +151,7 @@ def hexdigest_str_path_relative(
     hexdigest: str,
     width: int,
     depth: int,
-    verbose: Union[bool, int, float],
+    verbose: bool | int | float,
 ) -> Path:
 
     path_elements = shard(
@@ -170,7 +169,7 @@ def hexdigest_str_path(
     hexdigest: str,
     width: int,
     depth: int,
-    verbose: Union[bool, int, float],
+    verbose: bool | int | float,
 ) -> Path:
 
     root = Path(root).expanduser().resolve()
@@ -204,8 +203,8 @@ def hash_readable(
     *,
     handle,
     algorithm: str,
-    tmp: Optional[Path],
-    verbose: Union[bool, int, float],
+    tmp: None | Path,
+    verbose: bool | int | float,
 ) -> bytes:
     block_size = 256 * 128 * 2
     hashtool = hashlib.new(algorithm)
@@ -224,8 +223,8 @@ def hash_file(
     path: Path,
     *,
     algorithm: str,
-    tmp: Optional[Path] = None,
-    verbose: Union[bool, int, float],
+    tmp: None | Path = None,
+    verbose: bool | int | float,
 ) -> bytes:
     path = Path(path).expanduser()
     fd = os.open(path, os.O_RDONLY)
@@ -250,7 +249,7 @@ def hash_file(
 def hash_file_with_all_algorithms(
     path: Path,
     *,
-    verbose: Union[bool, int, float],
+    verbose: bool | int | float,
 ):
     if verbose:
         ic(path)
@@ -267,12 +266,12 @@ def rhash_file(
     *,
     disable_locking: bool,
     algorithms: Iterable,
-    verbose: Union[bool, int, float],
+    verbose: bool | int | float,
 ) -> dict:
     def convert_digest_dict_to_objects(
         *,
         digest_dict: dict,
-        verbose: Union[bool, int, float],
+        verbose: bool | int | float,
     ):
 
         digest_results = {}
@@ -388,7 +387,7 @@ class WDgen:
 def generate_hash(
     data,
     *,
-    verbose: Union[bool, int, float],
+    verbose: bool | int | float,
 ):
     if not data:
         raise ValueError
@@ -491,7 +490,7 @@ def generate_hash(
 def sha1_hash_file(
     path,
     *,
-    verbose: Union[bool, int, float],
+    verbose: bool | int | float,
     block_size=256 * 128 * 2,
     binary=False,
 ):
@@ -506,7 +505,7 @@ def sha1_hash_file(
 
 def sha3_256_hash_file(
     path: Path,
-    verbose: Union[bool, int, float],
+    verbose: bool | int | float,
     block_size: int = 256 * 128 * 2,
 ) -> bytes:
     if verbose:
@@ -612,6 +611,7 @@ class MtHasher(Hasher):
 
     def __init__(self):
         algos = get_openssl_hash_algs()
+        assert False  # woah, every alg lol
         # eprint("algos:", algos)
         super(MtHasher, self).__init__(algos)
         self._queues = {}
@@ -656,18 +656,18 @@ class MtHasher(Hasher):
         return super(MtHasher, self).digests()
 
 
-def hash_bytes(byte_string):
+def hash_bytes(byte_string: bytes):
     if isinstance(byte_string, str):
-        byte_string = byte_string.encode("UTF-8")
+        raise TypeError(type(byte_string))
+        # byte_string = byte_string.encode("UTF-8")
     hashtool = MtHasher()
-    """encode unicode to UTF-8, read bytes and update the hash states. """
     hashtool.update(byte_string)
     return hashtool
 
 
 def bytes_dict_file(
     path,
-    verbose: Union[bool, int, float],
+    verbose: bool | int | float,
 ):
     bytes_dict = {}
     hashtool = hash_file_with_all_algorithms(
@@ -689,7 +689,7 @@ def bytes_dict_bytes(byte_string):
 
 def hex_dict_file(
     path,
-    verbose: Union[bool, int, float],
+    verbose: bool | int | float,
 ):
     bytes_dict = {}
     hashtool = hash_file_with_all_algorithms(
@@ -705,7 +705,7 @@ def detect_hash_tree_width_and_depth(
     *,
     root: Path,
     alg: str,
-    verbose: Union[bool, int, float],
+    verbose: bool | int | float,
     max_width: int = 5,
     max_depth: int = 5,
 ):
@@ -757,7 +757,7 @@ def cli(
     files: tuple[str],
     disable_locking: bool,
     algorithms: tuple[str],
-    verbose: Union[bool, int, float],
+    verbose: bool | int | float,
     verbose_inf: bool,
     dict_input: bool,
 ):
