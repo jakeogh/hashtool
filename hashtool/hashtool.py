@@ -33,6 +33,7 @@ from queue import Queue
 from signal import SIG_DFL
 from signal import SIGPIPE
 from signal import signal
+from tempfile import _TemporaryFileWrapper
 from threading import Thread
 from typing import Iterable
 
@@ -203,7 +204,7 @@ def hash_readable(
     *,
     handle,
     algorithm: str,
-    tmp: None | Path,
+    tmp: None | _TemporaryFileWrapper,
     verbose: bool | int | float,
 ) -> bytes:
     block_size = 256 * 128 * 2
@@ -213,6 +214,7 @@ def hash_readable(
         if tmp:
             tmp.write(chunk)
     if tmp:
+        # hm, tmp.file.name is an int
         os.posix_fadvise(tmp.file.name, 0, 0, os.POSIX_FADV_DONTNEED)
         tmp.close()
     return hashtool.digest()
