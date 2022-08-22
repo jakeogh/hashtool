@@ -761,7 +761,7 @@ def cli(
     algorithms: tuple[str],
     verbose: bool | int | float,
     verbose_inf: bool,
-    dict_input: bool,
+    dict_output: bool,
 ):
 
     tty, verbose = tv(
@@ -796,7 +796,7 @@ def cli(
                 output(
                     {key: value},
                     reason=_path,
-                    dict_input=dict_input,
+                    dict_output=dict_output,
                     tty=tty,
                     verbose=verbose,
                 )
@@ -804,7 +804,7 @@ def cli(
                 output(
                     value.digest,
                     reason=_path,
-                    dict_input=dict_input,
+                    dict_output=dict_output,
                     tty=tty,
                     verbose=verbose,
                 )
