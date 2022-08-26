@@ -45,6 +45,7 @@ from asserttool import ic
 from asserttool import increment_debug
 from asserttool import maxone
 from asserttool import one
+from click_auto_help import AHGroup
 from clicktool import click_add_options
 from clicktool import click_global_options
 from clicktool import tv
@@ -54,8 +55,6 @@ from mptool import output
 from requests.models import Response
 from retry_on_exception import retry_on_exception
 from unmp import unmp
-
-# from pydantic import BaseModel
 
 # from collections.abc import Sequence
 signal(SIGPIPE, SIG_DFL)
@@ -141,8 +140,8 @@ def emptyhash(alg):
     return emptyhexdigest
 
 
-def hash_str(string: str):
-    digest = getattr(hashlib, "sha3_256")(string.encode("utf8")).digest()
+def hash_str(string: str, verbose: bool | int | float, algorithm: str = "sha3_256"):
+    digest = getattr(hashlib, algorithm)(string.encode("utf8")).digest()
     # hexdigest = digest.hex()
     return digest
 
@@ -742,7 +741,24 @@ def detect_hash_tree_width_and_depth(
     raise ValueError(message)
 
 
-@click.command()
+@click.group(no_args_is_help=True, cls=AHGroup)
+@click_add_options(click_global_options)
+@click.pass_context
+def cli(
+    ctx,
+    verbose: bool | int | float,
+    verbose_inf: bool,
+    dict_output: bool,
+) -> None:
+
+    tty, verbose = tv(
+        ctx=ctx,
+        verbose=verbose,
+        verbose_inf=verbose_inf,
+    )
+
+
+@cli.command()
 @click.argument("files", type=str, nargs=-1)
 @click.option(
     "--algorithm",
@@ -754,7 +770,7 @@ def detect_hash_tree_width_and_depth(
 @click.option("--disable-locking", is_flag=True)
 @click_add_options(click_global_options)
 @click.pass_context
-def cli(
+def _files(
     ctx,
     files: tuple[str],
     disable_locking: bool,
@@ -808,3 +824,47 @@ def cli(
                     tty=tty,
                     verbose=verbose,
                 )
+
+
+@cli.command()
+@click.option(
+    "--algorithm",
+    "algorithms",
+    type=click.Choice(generate_hashlib_algorithm_set()),
+    default=["sha3_256"],
+    multiple=True,
+)
+@click_add_options(click_global_options)
+@click.pass_context
+def _strings(
+    ctx,
+    algorithms: tuple[str],
+    verbose: bool | int | float,
+    verbose_inf: bool,
+    dict_output: bool,
+):
+
+    tty, verbose = tv(
+        ctx=ctx,
+        verbose=verbose,
+        verbose_inf=verbose_inf,
+    )
+
+    iterator = unmp(
+        valid_types=[
+            bytes,
+            str,
+        ],
+        verbose=verbose,
+    )
+
+    algorithm = algorithms[0]
+    for index, _str in enumerate(iterator):
+        _str_hash = hash_str(_str, algorithm=algorithm, verbose=verbose)
+        output(
+            _str_hash,
+            reason=_str,
+            dict_output=dict_output,
+            tty=tty,
+            verbose=verbose,
+        )
