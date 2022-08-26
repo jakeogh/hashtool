@@ -758,7 +758,7 @@ def cli(
     )
 
 
-@cli.command()
+@cli.command("files")
 @click.argument("files", type=str, nargs=-1)
 @click.option(
     "--algorithm",
@@ -826,7 +826,7 @@ def _files(
                 )
 
 
-@cli.command()
+@cli.command("strings")
 @click.option(
     "--algorithm",
     "algorithms",
