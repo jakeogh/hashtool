@@ -12,6 +12,7 @@ if not sys.version_info[0] == 3:
 
 dependencies = [
     "advisory-lock @ git+https://git@github.com/jakeogh/advisory_lock",
+    "python-getdents @ git+https://git@github.com/jakeogh/python-getdents",
 ]
 
 config = {
