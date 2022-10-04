@@ -50,7 +50,7 @@ from clicktool import click_add_options
 from clicktool import click_global_options
 from clicktool import tv
 from eprint import eprint
-from getdents import paths
+# from getdents import paths
 from mptool import output
 from requests.models import Response
 from retry_on_exception import retry_on_exception
@@ -702,43 +702,43 @@ def hex_dict_file(
     return bytes_dict
 
 
-def detect_hash_tree_width_and_depth(
-    *,
-    root: Path,
-    alg: str,
-    verbose: bool | int | float,
-    max_width: int = 5,
-    max_depth: int = 5,
-):
-    assert isinstance(root, Path)
-    # empty_hexdigest = emptyhash(alg)
-    # empty_hexdigest_length = len(empty_hexdigest)
-    width = 0
-    depth = 0
-    assert alg == root.name
-
-    for path in paths(
-        path=root,
-        return_dirs=False,
-        return_files=True,
-        return_symlinks=True,
-        verbose=verbose,
-    ):
-        path = path.pathlib
-        # ic(path)
-        relative_path = path.relative_to(root)
-        # ic(relative_path)
-        relative_path_parts = relative_path.parts
-        width = len(relative_path_parts[0])
-        for depth, part in enumerate(relative_path_parts):
-            if len(part) != width:
-                if verbose:
-                    ic(width)
-                    ic(depth)
-                return width, depth
-
-    message = "Unable to detect width/depth."
-    raise ValueError(message)
+# def detect_hash_tree_width_and_depth(
+#    *,
+#    root: Path,
+#    alg: str,
+#    verbose: bool | int | float,
+#    max_width: int = 5,
+#    max_depth: int = 5,
+# ):
+#    assert isinstance(root, Path)
+#    # empty_hexdigest = emptyhash(alg)
+#    # empty_hexdigest_length = len(empty_hexdigest)
+#    width = 0
+#    depth = 0
+#    assert alg == root.name
+#
+#    for path in paths(
+#        path=root,
+#        return_dirs=False,
+#        return_files=True,
+#        return_symlinks=True,
+#        verbose=verbose,
+#    ):
+#        path = path.pathlib
+#        # ic(path)
+#        relative_path = path.relative_to(root)
+#        # ic(relative_path)
+#        relative_path_parts = relative_path.parts
+#        width = len(relative_path_parts[0])
+#        for depth, part in enumerate(relative_path_parts):
+#            if len(part) != width:
+#                if verbose:
+#                    ic(width)
+#                    ic(depth)
+#                return width, depth
+#
+#    message = "Unable to detect width/depth."
+#    raise ValueError(message)
 
 
 @click.group(no_args_is_help=True, cls=AHGroup)
