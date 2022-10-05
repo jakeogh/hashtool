@@ -15,6 +15,7 @@ dependencies = [
     "retry-on-exception @ git+https://git@github.com/jakeogh/retry_on_exception",
     "psutil",
     "attrs",
+    "sh",
 ]
 
 config = {
