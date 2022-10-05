@@ -13,6 +13,7 @@ if not sys.version_info[0] == 3:
 dependencies = [
     "advisory-lock @ git+https://git@github.com/jakeogh/advisory_lock",
     "retry-on-exception @ git+https://git@github.com/jakeogh/retry_on_exception",
+    "click-auto-help @ git+https://git@github.com/jakeogh/click-auto-help",
     "psutil",
     "attrs",
     "sh",
