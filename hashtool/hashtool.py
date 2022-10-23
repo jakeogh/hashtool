@@ -425,7 +425,7 @@ def rhash_file(
     command.append(path.as_posix())
     rhash_command = " ".join(command)
 
-    epprint(f"{rhash_command=}")
+    # epprint(f"{rhash_command=}")
     rhash_command_result = None
     if disable_locking:
         rhash_command_result = run_command(rhash_command, verbose=verbose)
