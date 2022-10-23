@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf8 -*-
 
+# pylint: disable=useless-suppression             # [I0021]
 # pylint: disable=missing-docstring               # [C0111] docstrings are always outdated and wrong
 # pylint: disable=fixme                           # [W0511] todo is encouraged
 # pylint: disable=line-too-long                   # [C0301]
@@ -23,9 +24,7 @@ from __future__ import annotations
 import binascii
 import hashlib
 import os
-import subprocess
 import sys
-import tempfile
 from itertools import product
 from math import inf
 from pathlib import Path
@@ -50,10 +49,9 @@ from clicktool import click_add_options
 from clicktool import click_global_options
 from clicktool import tv
 from eprint import eprint
-# from getdents import paths
 from mptool import output
-from requests.models import Response
 from retry_on_exception import retry_on_exception
+from run_command import run_command
 from unmp import unmp
 
 # from collections.abc import Sequence
@@ -247,22 +245,22 @@ def hash_file(
     return digest
 
 
-def hash_file_with_all_algorithms(
-    path: Path,
-    *,
-    verbose: bool | int | float,
-):
-    if verbose:
-        ic(path)
-    path = Path(path).expanduser().resolve()
-    hashtool = MtHasher()
-    for data in read_blocks(path):
-        hashtool.update(data)
-    return hashtool
+# def hash_file_with_all_algorithms(
+#    path: Path,
+#    *,
+#    verbose: bool | int | float,
+# ):
+#    if verbose:
+#        ic(path)
+#    path = Path(path).expanduser().resolve()
+#    hashtool = MtHasher()
+#    for data in read_blocks(path):
+#        hashtool.update(data)
+#    return hashtool
 
 
 @increment_debug
-def rhash_file(
+def rhash_file_sh(
     path: Path,
     *,
     disable_locking: bool,
@@ -371,6 +369,98 @@ def rhash_file(
     return digest_results
 
 
+@increment_debug
+def rhash_file(
+    path: Path,
+    *,
+    disable_locking: bool,
+    algorithms: Iterable,
+    verbose: bool | int | float,
+) -> dict:
+    def convert_digest_dict_to_objects(
+        *,
+        digest_dict: dict,
+        verbose: bool | int | float,
+    ):
+
+        digest_results = {}
+        for key, hexdigest in digest_dict.items():
+            digest = binascii.unhexlify(hexdigest)
+            digest = Digest(
+                algorithm=key,
+                digest=digest,
+                verbose=verbose,
+            )
+            digest_results[key] = digest
+        return digest_results
+
+    if verbose == inf:
+        ic(disable_locking, path)
+    # assert verbose
+    path = Path(path).expanduser().resolve()
+    assert algorithms
+    result_dict = {}
+    format_string = []
+    command = [
+        "rhash",
+    ]
+    for algorithm in algorithms:
+        if algorithm == "sha3_256":
+            command.append("--sha3-256")
+            format_string.append("sha3_256:%{sha3-256}")
+        elif algorithm == "sha256":
+            command.append("--sha256")
+            format_string.append("sha256:%{sha-256}")
+        elif algorithm == "sha1":
+            command.append("--sha1")
+            format_string.append("sha1:%{sha1}")
+        else:
+            raise NotImplementedError(algorithm)
+
+    format_string = " ".join(format_string)
+    format_string = f"--printf={format_string}"
+    command.append(format_string)
+    command.append(path.as_posix())
+    rhash_command = " ".join(command)
+
+    rhash_command_result = None
+    if disable_locking:
+        rhash_command_result = run_command(rhash_command, verbose=verbose)
+    else:
+        with AdvisoryLock(
+            path=path,
+            file_exists=True,
+            open_read=True,
+            # open_write=True,  #lockf needs R/W
+            open_write=False,  # lockf needs R/W
+            flock=True,
+            verbose=verbose,
+        ) as fl:
+            rhash_command_result = run_command(rhash_command, verbose=verbose)
+
+    # assert result
+    assert rhash_command_result
+    # ic(result)
+    # ic(rhash_command_result)
+    results = rhash_command_result.split(" ")
+    for result in results:
+        # ic(result)
+        alg, hexdigest = result.split(":")
+        result_dict[alg] = hexdigest
+
+    if verbose == inf:
+        _path = path.as_posix()
+        ic(_path, result_dict)
+        del _path
+
+    # ic(result_dict)
+    digest_results = convert_digest_dict_to_objects(
+        digest_dict=result_dict,
+        verbose=verbose,
+    )
+    return digest_results
+
+
 @attr.s(auto_attribs=True)
 class WDgen:
     width: int
@@ -389,107 +479,107 @@ class WDgen:
                 yield (w, d)
 
 
-def generate_hash(
-    data,
-    *,
-    verbose: bool | int | float,
-):
-    if not data:
-        raise ValueError
-    sha1 = hashlib.sha1()
-    chunk_size = 128 * sha1.block_size  # 8MB
-    return_dict = {}
-    if isinstance(data, tempfile._TemporaryFileWrapper):
-        filename = data.name
-        with open(filename, "rb") as f:
-            for chunk in iter(lambda: f.read(chunk_size), b""):
-                sha1.update(chunk)
-        return_dict["hash"] = sha1.hexdigest()
-        return return_dict
-    elif isinstance(data, Response):
-        # todo make temp_folder configurable, make sure it exists
-        with tempfile.NamedTemporaryFile(
-            mode="wb",
-            suffix=".tmp",
-            prefix="tmp-",
-            dir="/var/tmp/iridb",
-            delete=False,
-        ) as temp_file:
-            if verbose:
-                # import IPython; IPython.embed()
-                ic(data.url)
-            try:
-                data_size_from_headers = int(data.headers["Content-Length"])
-                # ic(data_size_from_headers)
-            except KeyError:
-                data_size_from_headers = False
-            for chunk in data.iter_content(chunk_size):
-                sha1.update(chunk)
-                temp_file.write(chunk)
-                current_file_size = int(os.path.getsize(temp_file.name))
-                if data_size_from_headers:
-                    eprint(
-                        temp_file.name,
-                        str(int((current_file_size / data_size_from_headers) * 100))
-                        + "%",
-                        current_file_size,
-                        data.url,
-                        end="\r",
-                        flush=True,
-                    )
-                else:
-                    eprint(
-                        temp_file.name,
-                        current_file_size,
-                        data.url,
-                        end="\r",
-                        flush=True,
-                    )
-
-        current_file_size = int(os.path.getsize(temp_file.name))
-        # update final size
-        if data_size_from_headers:
-            eprint(
-                temp_file.name,
-                str(int((current_file_size / data_size_from_headers) * 100)) + "%",
-                current_file_size,
-                data.url,
-                end="\r",
-                flush=True,
-            )
-        else:
-            eprint(
-                temp_file.name,
-                current_file_size,
-                data.url,
-                end="\r",
-                flush=True,
-            )
-
-        if verbose:
-            eprint("\n", end="")
-        # eprint('finished writing temp_file:', temp_file.name)
-        if os.path.getsize(temp_file.name) == 0:
-            ic("content is zero bytes, raising FileNotFoundError")  # this happens
-            raise FileNotFoundError
-        return_dict["hash"] = sha1.hexdigest()
-        assert return_dict["hash"]
-        return_dict["temp_file"] = temp_file
-        return return_dict
-    else:
-        try:
-            if len(data) == 0:
-                # empty_hash = hashlib.sha1(data).hexdigest()
-                ic("Error: you are attempting to hash a empty string.")
-                raise FileNotFoundError
-        except TypeError:
-            raise FileNotFoundError
-
-        if isinstance(data, str):
-            return_dict["hash"] = hashlib.sha1(data.encode("utf-8")).hexdigest()
-        else:
-            return_dict["hash"] = hashlib.sha1(data).hexdigest()
-        return return_dict
+# def generate_hash_sha1(
+#    data,
+#    *,
+#    verbose: bool | int | float,
+# ):
+#    if not data:
+#        raise ValueError
+#    sha1 = hashlib.sha1()
+#    chunk_size = 128 * sha1.block_size  # 8MB
+#    return_dict = {}
+#    if isinstance(data, tempfile._TemporaryFileWrapper):
+#        filename = data.name
+#        with open(filename, "rb") as f:
+#            for chunk in iter(lambda: f.read(chunk_size), b""):
+#                sha1.update(chunk)
+#        return_dict["hash"] = sha1.hexdigest()
+#        return return_dict
+#    elif isinstance(data, Response):
+#        # todo make temp_folder configurable, make sure it exists
+#        with tempfile.NamedTemporaryFile(
+#            mode="wb",
+#            suffix=".tmp",
+#            prefix="tmp-",
+#            dir="/var/tmp/iridb",
+#            delete=False,
+#        ) as temp_file:
+#            if verbose:
+#                # import IPython; IPython.embed()
+#                ic(data.url)
+#            try:
+#                data_size_from_headers = int(data.headers["Content-Length"])
+#                # ic(data_size_from_headers)
+#            except KeyError:
+#                data_size_from_headers = False
+#            for chunk in data.iter_content(chunk_size):
+#                sha1.update(chunk)
+#                temp_file.write(chunk)
+#                current_file_size = int(os.path.getsize(temp_file.name))
+#                if data_size_from_headers:
+#                    eprint(
+#                        temp_file.name,
+#                        str(int((current_file_size / data_size_from_headers) * 100))
+#                        + "%",
+#                        current_file_size,
+#                        data.url,
+#                        end="\r",
+#                        flush=True,
+#                    )
+#                else:
+#                    eprint(
+#                        temp_file.name,
+#                        current_file_size,
+#                        data.url,
+#                        end="\r",
+#                        flush=True,
+#                    )
+#
+#        current_file_size = int(os.path.getsize(temp_file.name))
+#        # update final size
+#        if data_size_from_headers:
+#            eprint(
+#                temp_file.name,
+#                str(int((current_file_size / data_size_from_headers) * 100)) + "%",
+#                current_file_size,
+#                data.url,
+#                end="\r",
+#                flush=True,
+#            )
+#        else:
+#            eprint(
+#                temp_file.name,
+#                current_file_size,
+#                data.url,
+#                end="\r",
+#                flush=True,
+#            )
+#
+#        if verbose:
+#            eprint("\n", end="")
+#        # eprint('finished writing temp_file:', temp_file.name)
+#        if os.path.getsize(temp_file.name) == 0:
+#            ic("content is zero bytes, raising FileNotFoundError")  # this happens
+#            raise FileNotFoundError
+#        return_dict["hash"] = sha1.hexdigest()
+#        assert return_dict["hash"]
+#        return_dict["temp_file"] = temp_file
+#        return return_dict
+#    else:
+#        try:
+#            if len(data) == 0:
+#                # empty_hash = hashlib.sha1(data).hexdigest()
+#                ic("Error: you are attempting to hash a empty string.")
+#                raise FileNotFoundError
+#        except TypeError:
+#            raise FileNotFoundError
+#
+#        if isinstance(data, str):
+#            return_dict["hash"] = hashlib.sha1(data.encode("utf-8")).hexdigest()
+#        else:
+#            return_dict["hash"] = hashlib.sha1(data).hexdigest()
+#        return return_dict
 
 
 def sha1_hash_file(
@@ -522,39 +612,39 @@ def sha3_256_hash_file(
     return sha3.digest()
 
 
-def get_openssl_hash_algs_real():
-    blacklist = set(["SHA", "MD4", "ecdsa-with-SHA1", "DSA", "DSA-SHA", "MDC2"])
-    results = []
-    command = " ".join(["openssl", "list-message-digest-algorithms"])
-    p = subprocess.Popen(
-        command,
-        shell=True,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT,
-    )
-    for line in p.stdout.readlines():
-        if b"=>" not in line:
-            line = line.strip()
-            #           line = line.lower()
-            line = line[:]
-            line = line.decode("ascii")
-            results.append(line)
-    return set(results) - blacklist
+# def get_openssl_hash_algs_real():
+#    blacklist = set(["SHA", "MD4", "ecdsa-with-SHA1", "DSA", "DSA-SHA", "MDC2"])
+#    results = []
+#    command = " ".join(["openssl", "list-message-digest-algorithms"])
+#    p = subprocess.Popen(
+#        command,
+#        shell=True,
+#        stdout=subprocess.PIPE,
+#        stderr=subprocess.STDOUT,
+#    )
+#    for line in p.stdout.readlines():
+#        if b"=>" not in line:
+#            line = line.strip()
+#            #           line = line.lower()
+#            line = line[:]
+#            line = line.decode("ascii")
+#            results.append(line)
+#    return set(results) - blacklist
 
 
-def get_openssl_hash_algs():
-    return set(
-        [
-            "SHA1",
-            "MD5",
-            "RIPEMD160",
-            "SHA256",
-            "SHA384",
-            "SHA512",
-            "whirlpool",
-            "SHA224",
-        ]
-    )
+# def get_openssl_hash_algs():
+#    return set(
+#        [
+#            "SHA1",
+#            "MD5",
+#            "RIPEMD160",
+#            "SHA256",
+#            "SHA384",
+#            "SHA512",
+#            "whirlpool",
+#            "SHA224",
+#        ]
+#    )
 
 
 def read_blocks(filename):
@@ -576,134 +666,131 @@ def read_blocks(filename):
         f.close()
 
 
-# Calculate (multiple) digest(s) for file(s)
-# Author: Peter Wu <peter@lekensteyn.nl>
-# Licensed under the MIT license <http://opensource.org/licenses/MIT>
-# http://unix.stackexchange.com/questions/163747/simultaneously-calculate-multiple-digests-md5-sha256
-# https://git.lekensteyn.nl/scripts/tree/digest.py
+## Calculate (multiple) digest(s) for file(s)
+## Author: Peter Wu <peter@lekensteyn.nl>
+## Licensed under the MIT license <http://opensource.org/licenses/MIT>
+## http://unix.stackexchange.com/questions/163747/simultaneously-calculate-multiple-digests-md5-sha256
+## https://git.lekensteyn.nl/scripts/tree/digest.py
+# class Hasher(object):
+#    """Calculate multiple hash digests for a piece of data."""
+#
+#    def __init__(self, algs):
+#        self.algs = algs
+#        self._hashes = {}
+#        for alg in self.algs:
+#            self._hashes[alg] = getattr(hashlib, "new")(alg)
+#
+#    def update(self, data):
+#        for h in self._hashes:
+#            eprint(h)
+#            h.update(data)
+#
+#    def hexdigests(self):
+#        """Yields the algorithm and the calculated hex digest."""
+#        for alg in self.algs:
+#            digest = self._hashes[alg].hexdigest()
+#            yield alg.lower(), digest
+#
+#    def digests(self):
+#        """Yields the algorithm and the calculated bytes digest."""
+#        for alg in self.algs:
+#            digest = self._hashes[alg].digest()
+#            yield alg.lower(), digest
+#
+#
+# class MtHasher(Hasher):
+#    # Queue size. Memory usage is this times block size (1M)
+#    QUEUE_SIZE = 10
+#
+#    def __init__(self, algs):
+#        # algos = get_openssl_hash_algs()
+#        ic(algs)
+#        super(MtHasher, self).__init__(algs)
+#        self._queues = {}
+#        self._threads = {}
+#        for alg in algs:
+#            t = Thread(target=self._queue_updater, args=(alg,), name=alg)
+#            self._queues[alg] = Queue(MtHasher.QUEUE_SIZE)
+#            self._threads[alg] = t
+#            t.start()
+#
+#    def _queue_updater(self, alg):
+#        q = self._queues[alg]
+#        h = self._hashes[alg]
+#        while True:
+#            data = q.get()
+#            # Treat an empty value as terminator
+#            if not data:
+#                break
+#            h.update(data)
+#
+#    def update(self, data):
+#        if data:
+#            for q in self._queues.values():
+#                q.put(data)
+#
+#    def hexdigests(self):
+#        """Wait until all calculations are done and yield hexdigests in the meantime."""
+#        for alg in self.algs:
+#            q = self._queues[alg]
+#            q.put(b"")  # Terminate
+#            self._threads[alg].join()
+#            assert q.empty()
+#        return super(MtHasher, self).hexdigests()
+#
+#    def digests(self):
+#        """Wait until all calculations are done and yield digests in the meantime."""
+#        for alg in self.algs:
+#            q = self._queues[alg]
+#            q.put(b"")  # Terminate
+#            self._threads[alg].join()
+#            assert q.empty()
+#        return super(MtHasher, self).digests()
 
 
-class Hasher(object):
-    """Calculate multiple hash digests for a piece of data."""
-
-    def __init__(self, algos):
-        self.algos = algos
-        self._hashes = {}
-        for algo in self.algos:
-            self._hashes[algo] = getattr(hashlib, "new")(algo)
-
-    def update(self, data):
-        for h in self._hashes:
-            eprint(h)
-            h.update(data)
-
-    def hexdigests(self):
-        """Yields the algorithm and the calculated hex digest."""
-        for algo in self.algos:
-            digest = self._hashes[algo].hexdigest()
-            yield algo.lower(), digest
-
-    def digests(self):
-        """Yields the algorithm and the calculated bytes digest."""
-        for algo in self.algos:
-            digest = self._hashes[algo].digest()
-            yield algo.lower(), digest
+# def hash_bytes(byte_string: bytes):
+#    if isinstance(byte_string, str):
+#        raise TypeError(type(byte_string))
+#        # byte_string = byte_string.encode("UTF-8")
+#    hashtool = MtHasher()
+#    hashtool.update(byte_string)
+#    return hashtool
 
 
-class MtHasher(Hasher):
-    # Queue size. Memory usage is this times block size (1M)
-    QUEUE_SIZE = 10
-
-    def __init__(self):
-        algos = get_openssl_hash_algs()
-        assert False  # woah, every alg lol
-        # eprint("algos:", algos)
-        super(MtHasher, self).__init__(algos)
-        self._queues = {}
-        self._threads = {}
-        for algo in algos:
-            t = Thread(target=self._queue_updater, args=(algo,), name=algo)
-            self._queues[algo] = Queue(MtHasher.QUEUE_SIZE)
-            self._threads[algo] = t
-            t.start()
-
-    def _queue_updater(self, algo):
-        q = self._queues[algo]
-        h = self._hashes[algo]
-        while True:
-            data = q.get()
-            # Treat an empty value as terminator
-            if not data:
-                break
-            h.update(data)
-
-    def update(self, data):
-        if data:
-            for q in self._queues.values():
-                q.put(data)
-
-    def hexdigests(self):
-        """Wait until all calculations are done and yield hexdigests in the meantime."""
-        for algo in self.algos:
-            q = self._queues[algo]
-            q.put(b"")  # Terminate
-            self._threads[algo].join()
-            assert q.empty()
-        return super(MtHasher, self).hexdigests()
-
-    def digests(self):
-        """Wait until all calculations are done and yield digests in the meantime."""
-        for algo in self.algos:
-            q = self._queues[algo]
-            q.put(b"")  # Terminate
-            self._threads[algo].join()
-            assert q.empty()
-        return super(MtHasher, self).digests()
+# def bytes_dict_file(
+#    path,
+#    verbose: bool | int | float,
+# ):
+#    bytes_dict = {}
+#    hashtool = hash_file_with_all_algorithms(
+#        path=path,
+#        verbose=verbose,
+#    )
+#    for algo, digest in hashtool.digests():
+#        bytes_dict[algo] = digest
+#    return bytes_dict
 
 
-def hash_bytes(byte_string: bytes):
-    if isinstance(byte_string, str):
-        raise TypeError(type(byte_string))
-        # byte_string = byte_string.encode("UTF-8")
-    hashtool = MtHasher()
-    hashtool.update(byte_string)
-    return hashtool
+# def bytes_dict_bytes(byte_string):
+#    bytes_dict = {}
+#    hashtool = hash_bytes(byte_string)
+#    for algo, digest in hashtool.digests():
+#        bytes_dict[algo] = digest
+#    return bytes_dict
 
 
-def bytes_dict_file(
-    path,
-    verbose: bool | int | float,
-):
-    bytes_dict = {}
-    hashtool = hash_file_with_all_algorithms(
-        path=path,
-        verbose=verbose,
-    )
-    for algo, digest in hashtool.digests():
-        bytes_dict[algo] = digest
-    return bytes_dict
-
-
-def bytes_dict_bytes(byte_string):
-    bytes_dict = {}
-    hashtool = hash_bytes(byte_string)
-    for algo, digest in hashtool.digests():
-        bytes_dict[algo] = digest
-    return bytes_dict
-
-
-def hex_dict_file(
-    path,
-    verbose: bool | int | float,
-):
-    bytes_dict = {}
-    hashtool = hash_file_with_all_algorithms(
-        path=path,
-        verbose=verbose,
-    )
-    for algo, digest in hashtool.hexdigests():
-        bytes_dict[algo] = digest
-    return bytes_dict
+# def hex_dict_file(
+#    path,
+#    verbose: bool | int | float,
+# ):
+#    bytes_dict = {}
+#    hashtool = hash_file_with_all_algorithms(
+#        path=path,
+#        verbose=verbose,
+#    )
+#    for algo, digest in hashtool.hexdigests():
+#        bytes_dict[algo] = digest
+#    return bytes_dict
 
 
 # def detect_hash_tree_width_and_depth(
