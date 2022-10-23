@@ -445,7 +445,7 @@ def rhash_file(
     assert rhash_command_result
     # ic(result)
     # ic(rhash_command_result)
-    results = rhash_command_result.split(" ")
+    results = rhash_command_result.decode("utf8").split(" ")
     for result in results:
         # ic(result)
         alg, hexdigest = result.split(":")
