@@ -28,12 +28,10 @@ import sys
 from itertools import product
 from math import inf
 from pathlib import Path
-from queue import Queue
 from signal import SIG_DFL
 from signal import SIGPIPE
 from signal import signal
 from tempfile import _TemporaryFileWrapper
-from threading import Thread
 from typing import Iterable
 
 import attr
@@ -48,11 +46,15 @@ from click_auto_help import AHGroup
 from clicktool import click_add_options
 from clicktool import click_global_options
 from clicktool import tv
+from epprint import epprint
 from eprint import eprint
 from mptool import output
 from retry_on_exception import retry_on_exception
 from run_command import run_command
 from unmp import unmp
+
+# from threading import Thread
+# from queue import Queue
 
 # from collections.abc import Sequence
 signal(SIGPIPE, SIG_DFL)
@@ -418,11 +420,12 @@ def rhash_file(
             raise NotImplementedError(algorithm)
 
     format_string = " ".join(format_string)
-    format_string = f"--printf={format_string}"
+    format_string = f"--printf='{format_string}'"
     command.append(format_string)
     command.append(path.as_posix())
     rhash_command = " ".join(command)
 
+    epprint(f"{rhash_command=}")
     rhash_command_result = None
     if disable_locking:
         rhash_command_result = run_command(rhash_command, verbose=verbose)
