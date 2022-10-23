@@ -323,11 +323,11 @@ def rhash_file(
 
     rhash_command_result = None
     if disable_locking:
-        try:
-            rhash_command_result = rhash_command()
-        except sh.SignalException_SIGALRM:
-            ic("sh.rhash got sh.SignalException_SIGALRM")
-            assert rhash_command_result
+        # try:
+        rhash_command_result = rhash_command()
+        # except sh.SignalException_SIGALRM:
+        #    ic("sh.rhash got sh.SignalException_SIGALRM")
+        #    assert rhash_command_result
         # ic(rhash_command_result)
         # result = run_command(command, shell=True).decode('utf8')
     else:
