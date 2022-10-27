@@ -39,7 +39,6 @@ import click
 import sh
 from advisory_lock import AdvisoryLock
 from asserttool import ic
-from asserttool import increment_debug
 from asserttool import maxone
 from asserttool import one
 from click_auto_help import AHGroup
@@ -261,7 +260,6 @@ def hash_file(
 #    return hashtool
 
 
-@increment_debug
 def rhash_file_sh(
     path: Path,
     *,
@@ -371,7 +369,6 @@ def rhash_file_sh(
     return digest_results
 
 
-@increment_debug
 def rhash_file(
     path: Path,
     *,
