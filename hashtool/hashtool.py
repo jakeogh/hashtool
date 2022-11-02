@@ -223,8 +223,8 @@ def hash_file(
     path: Path,
     *,
     algorithm: str,
-    tmp: None | Path = None,
     verbose: bool | int | float,
+    tmp: None | Path = None,
 ) -> bytes:
     path = Path(path).expanduser()
     fd = os.open(path, os.O_RDONLY)
@@ -244,20 +244,6 @@ def hash_file(
         os.posix_fadvise(fd, 0, 0, os.POSIX_FADV_DONTNEED)
         fh.close()
     return digest
-
-
-# def hash_file_with_all_algorithms(
-#    path: Path,
-#    *,
-#    verbose: bool | int | float,
-# ):
-#    if verbose:
-#        ic(path)
-#    path = Path(path).expanduser().resolve()
-#    hashtool = MtHasher()
-#    for data in read_blocks(path):
-#        hashtool.update(data)
-#    return hashtool
 
 
 def rhash_file_sh(
@@ -959,3 +945,17 @@ def _strings(
             tty=tty,
             verbose=verbose,
         )
+
+
+# def hash_file_with_all_algorithms(
+#    path: Path,
+#    *,
+#    verbose: bool | int | float,
+# ):
+#    if verbose:
+#        ic(path)
+#    path = Path(path).expanduser().resolve()
+#    hashtool = MtHasher()
+#    for data in read_blocks(path):
+#        hashtool.update(data)
+#    return hashtool
