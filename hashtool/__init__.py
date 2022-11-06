@@ -1,6 +1,7 @@
 # from .hashtool import detect_hash_tree_width_and_depth
 # from .hashtool import hash_bytes
 from .hashtool import Digest
+from .hashtool import IncorrectHashError
 from .hashtool import emptyhash
 from .hashtool import generate_hashlib_algorithm_set
 from .hashtool import hash_file

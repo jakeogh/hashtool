@@ -59,6 +59,10 @@ from unmp import unmp
 signal(SIGPIPE, SIG_DFL)
 
 
+class IncorrectHashError(ValueError):
+    pass
+
+
 class Digest:
     def __init__(
         self,
