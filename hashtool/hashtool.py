@@ -409,7 +409,7 @@ def rhash_file(
     format_string = " ".join(format_string)
     format_string = f"--printf='{format_string}'"
     command.append(format_string)
-    command.append(path.as_posix())
+    command.append(f"'{path.as_posix()}'")
     rhash_command = " ".join(command)
 
     # epprint(f"{rhash_command=}")
