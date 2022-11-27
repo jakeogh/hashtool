@@ -83,7 +83,7 @@ class Digest:
         if preimage is not None:
             assert isinstance(preimage, bytes)
 
-        if preimage:
+        if preimage is not None:
             assert digest is None
             digest = getattr(hashlib, self.algorithm)(preimage).digest()
 
