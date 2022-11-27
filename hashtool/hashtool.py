@@ -75,10 +75,12 @@ class Digest:
         self.algorithm = algorithm
         # @singledispatch would be nice here, could pass bytes or str and not need to unhexlify
         maxone([digest, preimage])
-        one([digest, preimage])
+        # one([digest, preimage])  fails on [None, b'']
+        if digest is None:
+            assert isinstance(preimage, bytes)
         if digest:
             assert isinstance(digest, bytes)
-        if preimage:
+        if preimage is not None:
             assert isinstance(preimage, bytes)
 
         if preimage:
