@@ -177,7 +177,8 @@ def hexdigest_str_path(
     verbose: bool | int | float,
 ) -> Path:
 
-    root = Path(root).expanduser().resolve()
+    # root = Path(root).expanduser().resolve() # breaks uhashfs aliases
+    root = Path(root)
     rel_path = hexdigest_str_path_relative(
         hexdigest=hexdigest,
         width=width,
@@ -338,7 +339,6 @@ def rhash_file_sh(
             # ic(rhash_command_result)
             # result = run_command(command, shell=True).decode('utf8')
 
-    # assert result
     assert rhash_command_result
     # ic(result)
     # ic(rhash_command_result)
