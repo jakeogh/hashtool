@@ -67,9 +67,9 @@ class Digest:
     def __init__(
         self,
         algorithm: str,
-        verbose: bool | int | float,
         digest: None | bytes = None,
         preimage: None | bytes = None,
+        verbose: bool | int | float = False,
     ):
 
         self.algorithm = algorithm
@@ -125,7 +125,7 @@ def md5_hash_file(
     path,
     *,
     block_size=256 * 128 * 2,
-    verbose: bool | int | float,
+    verbose: bool | int | float = False,
 ):
     md5 = hashlib.md5()
     with open(path, "rb") as f:
@@ -145,7 +145,11 @@ def emptyhash(alg):
     return emptyhexdigest
 
 
-def hash_str(string: str, verbose: bool | int | float, algorithm: str = "sha3_256"):
+def hash_str(
+    string: str,
+    verbose: bool | int | float = False,
+    algorithm: str = "sha3_256",
+):
     digest = getattr(hashlib, algorithm)(string.encode("utf8")).digest()
     # hexdigest = digest.hex()
     return digest
@@ -156,7 +160,7 @@ def hexdigest_str_path_relative(
     hexdigest: str,
     width: int,
     depth: int,
-    verbose: bool | int | float,
+    verbose: bool | int | float = False,
 ) -> Path:
 
     path_elements = shard(
@@ -174,7 +178,7 @@ def hexdigest_str_path(
     hexdigest: str,
     width: int,
     depth: int,
-    verbose: bool | int | float,
+    verbose: bool | int | float = False,
 ) -> Path:
 
     # root = Path(root).expanduser().resolve() # breaks uhashfs aliases
@@ -210,7 +214,7 @@ def hash_readable(
     handle,
     algorithm: str,
     tmp: None | _TemporaryFileWrapper,
-    verbose: bool | int | float,
+    verbose: bool | int | float = False,
 ) -> bytes:
     block_size = 256 * 128 * 2
     hashtool = hashlib.new(algorithm)
@@ -230,7 +234,7 @@ def hash_file(
     path: Path,
     *,
     algorithm: str,
-    verbose: bool | int | float,
+    verbose: bool | int | float = False,
     tmp: None | Path = None,
 ) -> bytes:
     path = Path(path).expanduser()
@@ -258,12 +262,12 @@ def rhash_file_sh(
     *,
     disable_locking: bool,
     algorithms: Iterable,
-    verbose: bool | int | float,
+    verbose: bool | int | float = False,
 ) -> dict:
     def convert_digest_dict_to_objects(
         *,
         digest_dict: dict,
-        verbose: bool | int | float,
+        verbose: bool | int | float = False,
     ):
 
         digest_results = {}
@@ -366,12 +370,12 @@ def rhash_file(
     *,
     disable_locking: bool,
     algorithms: Iterable,
-    verbose: bool | int | float,
+    verbose: bool | int | float = False,
 ) -> dict:
     def convert_digest_dict_to_objects(
         *,
         digest_dict: dict,
-        verbose: bool | int | float,
+        verbose: bool | int | float = False,
     ):
 
         digest_results = {}
@@ -474,7 +478,7 @@ class WDgen:
 # def generate_hash_sha1(
 #    data,
 #    *,
-#    verbose: bool | int | float,
+#    verbose: bool | int | float = False,
 # ):
 #    if not data:
 #        raise ValueError
@@ -577,7 +581,7 @@ class WDgen:
 def sha1_hash_file(
     path,
     *,
-    verbose: bool | int | float,
+    verbose: bool | int | float = False,
     block_size=256 * 128 * 2,
     binary=False,
 ):
@@ -592,7 +596,7 @@ def sha1_hash_file(
 
 def sha3_256_hash_file(
     path: Path,
-    verbose: bool | int | float,
+    verbose: bool | int | float = False,
     block_size: int = 256 * 128 * 2,
 ) -> bytes:
     if verbose:
@@ -751,7 +755,7 @@ def read_blocks(filename):
 
 # def bytes_dict_file(
 #    path,
-#    verbose: bool | int | float,
+#    verbose: bool | int | float = False,
 # ):
 #    bytes_dict = {}
 #    hashtool = hash_file_with_all_algorithms(
@@ -773,7 +777,7 @@ def read_blocks(filename):
 
 # def hex_dict_file(
 #    path,
-#    verbose: bool | int | float,
+#    verbose: bool | int | float = False,
 # ):
 #    bytes_dict = {}
 #    hashtool = hash_file_with_all_algorithms(
@@ -789,7 +793,7 @@ def read_blocks(filename):
 #    *,
 #    root: Path,
 #    alg: str,
-#    verbose: bool | int | float,
+#    verbose: bool | int | float = False,
 #    max_width: int = 5,
 #    max_depth: int = 5,
 # ):
@@ -829,9 +833,9 @@ def read_blocks(filename):
 @click.pass_context
 def cli(
     ctx,
-    verbose: bool | int | float,
     verbose_inf: bool,
     dict_output: bool,
+    verbose: bool | int | float = False,
 ) -> None:
 
     tty, verbose = tv(
@@ -858,9 +862,9 @@ def _files(
     files: tuple[str],
     disable_locking: bool,
     algorithms: tuple[str],
-    verbose: bool | int | float,
     verbose_inf: bool,
     dict_output: bool,
+    verbose: bool | int | float = False,
 ):
 
     tty, verbose = tv(
@@ -922,9 +926,9 @@ def _files(
 def _strings(
     ctx,
     algorithms: tuple[str],
-    verbose: bool | int | float,
     verbose_inf: bool,
     dict_output: bool,
+    verbose: bool | int | float = False,
 ):
 
     tty, verbose = tv(
@@ -956,7 +960,7 @@ def _strings(
 # def hash_file_with_all_algorithms(
 #    path: Path,
 #    *,
-#    verbose: bool | int | float,
+#    verbose: bool | int | float = False,
 # ):
 #    if verbose:
 #        ic(path)
