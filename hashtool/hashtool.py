@@ -202,6 +202,7 @@ def shard(hexdigest, width, depth):
 def generate_hashlib_algorithm_set():
     alg_set = set()
     algs = list(hashlib.algorithms_available)
+    ic(algs)
     for alg in algs:
         if alg.startswith("sha3"):
             alg = alg.replace("-", "_")
@@ -844,6 +845,9 @@ def cli(
         verbose_inf=verbose_inf,
     )
 
+    if not verbose:
+        ic.disable()
+
 
 @cli.command("files")
 @click.argument("files", type=str, nargs=-1)
@@ -982,6 +986,7 @@ def _empty_digests(
 
     if not algorithms:
         algorithms = generate_hashlib_algorithm_set()
+        ic(algorithms)
 
     for _alg in algorithms:
         _str_hash = hash_str("", algorithm=_alg, verbose=verbose)
