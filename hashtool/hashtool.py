@@ -962,7 +962,6 @@ def _strings(
     "--algorithm",
     "algorithms",
     type=click.Choice(generate_hashlib_algorithm_set()),
-    default=["sha3_256"],
     multiple=True,
 )
 @click_add_options(click_global_options)
@@ -981,7 +980,6 @@ def _empty_digests(
         verbose_inf=verbose_inf,
     )
 
-    # algorithm = algorithms[0]
     if not algorithms:
         algorithms = generate_hashlib_algorithm_set()
 
@@ -989,7 +987,7 @@ def _empty_digests(
         _str_hash = hash_str("", algorithm=_alg, verbose=verbose)
         output(
             _str_hash,
-            reason=None,
+            reason=_alg,
             dict_output=dict_output,
             tty=tty,
             verbose=verbose,
