@@ -408,7 +408,6 @@ def rhash_file(
 
     if verbose == inf:
         ic(disable_locking, path)
-    # assert verbose
     path = Path(path).expanduser().resolve()
     assert algorithms
     result_dict = {}
@@ -1002,16 +1001,50 @@ def _empty_digests(
 
     if not algorithms:
         algorithms = generate_hashlib_algorithm_set()
-        # ic(algorithms)
 
     for _alg in algorithms:
-        _str_hash = hash_str("", algorithm=_alg, verbose=verbose)
+        _str_hash = hash_str("", algorithm=_alg)
         output(
             _str_hash,
             reason=_alg,
             dict_output=dict_output,
             tty=tty,
-            verbose=verbose,
+        )
+
+
+@cli.command("empty-hexdigests")
+@click.option(
+    "--algorithm",
+    "algorithms",
+    type=click.Choice(generate_hashlib_algorithm_set()),
+    multiple=True,
+)
+@click_add_options(click_global_options)
+@click.pass_context
+def _empty_hexdigests(
+    ctx,
+    algorithms: tuple[str],
+    verbose_inf: bool,
+    dict_output: bool,
+    verbose: bool | int | float = False,
+):
+
+    tty, verbose = tv(
+        ctx=ctx,
+        verbose=verbose,
+        verbose_inf=verbose_inf,
+    )
+
+    if not algorithms:
+        algorithms = generate_hashlib_algorithm_set()
+
+    for _alg in algorithms:
+        _str_hash = hash_str("", algorithm=_alg)
+        output(
+            _str_hash.hex(),
+            reason=_alg,
+            dict_output=dict_output,
+            tty=tty,
         )
 
 
