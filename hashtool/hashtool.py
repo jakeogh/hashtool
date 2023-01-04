@@ -1002,7 +1002,7 @@ def _empty_digests(
 
     if not algorithms:
         algorithms = generate_hashlib_algorithm_set()
-        ic(algorithms)
+        # ic(algorithms)
 
     for _alg in algorithms:
         _str_hash = hash_str("", algorithm=_alg, verbose=verbose)
