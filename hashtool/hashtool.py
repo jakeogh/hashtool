@@ -147,11 +147,11 @@ def emptyhash(alg):
 
 def hash_str(
     string: str,
-    verbose: bool | int | float = False,
     algorithm: str = "sha3_256",
+    verbose: bool | int | float = False,
 ):
     _digest = getattr(hashlib, algorithm)(string.encode("utf8"))
-    ic(algorithm, _digest)
+    # ic(algorithm, _digest)
     _digest = _digest.digest()
     # hexdigest = digest.hex()
     return _digest
