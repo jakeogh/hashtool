@@ -957,6 +957,45 @@ def _strings(
         )
 
 
+@cli.command("empty-digests")
+@click.option(
+    "--algorithm",
+    "algorithms",
+    type=click.Choice(generate_hashlib_algorithm_set()),
+    default=["sha3_256"],
+    multiple=True,
+)
+@click_add_options(click_global_options)
+@click.pass_context
+def _empty_digests(
+    ctx,
+    algorithms: tuple[str],
+    verbose_inf: bool,
+    dict_output: bool,
+    verbose: bool | int | float = False,
+):
+
+    tty, verbose = tv(
+        ctx=ctx,
+        verbose=verbose,
+        verbose_inf=verbose_inf,
+    )
+
+    # algorithm = algorithms[0]
+    if not algorithms:
+        algorithms = generate_hashlib_algorithm_set()
+
+    for _alg in algorithms:
+        _str_hash = hash_str("", algorithm=_alg, verbose=verbose)
+        output(
+            _str_hash,
+            reason=None,
+            dict_output=dict_output,
+            tty=tty,
+            verbose=verbose,
+        )
+
+
 # def hash_file_with_all_algorithms(
 #    path: Path,
 #    *,
