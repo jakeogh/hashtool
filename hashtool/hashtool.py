@@ -206,6 +206,8 @@ def generate_hashlib_algorithm_set():
     algs = list(hashlib.algorithms_available)
     ic(algs)
     for alg in algs:
+        if alg.startswith("shake_"):
+            continue
         if alg.startswith("sha3"):
             alg = alg.replace("-", "_")
         alg_set.add(alg)
