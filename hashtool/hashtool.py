@@ -214,6 +214,7 @@ def generate_hashlib_algorithm_set():
             "md5-sha1",
             "sha512_256",
             "md4",
+            "mdc2",
         ]:
             continue
         if alg.startswith("shake_"):
