@@ -206,7 +206,7 @@ def generate_hashlib_algorithm_set():
     algs = list(hashlib.algorithms_available)
     ic(algs)
     for alg in algs:
-        if alg in ["md4"]:
+        if alg in ["sha512_256", "md4"]:
             continue
         if alg.startswith("shake_"):
             continue
