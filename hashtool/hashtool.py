@@ -25,6 +25,7 @@ import binascii
 import hashlib
 import os
 import sys
+from functools import lru_cache
 from itertools import product
 from math import inf
 from pathlib import Path
@@ -40,7 +41,6 @@ import sh
 from advisory_lock import AdvisoryLock
 from asserttool import ic
 from asserttool import maxone
-from asserttool import one
 from click_auto_help import AHGroup
 from clicktool import click_add_options
 from clicktool import click_global_options
@@ -201,6 +201,7 @@ def shard(hexdigest, width, depth):
     )
 
 
+@lru_cache
 def generate_hashlib_algorithm_set():
     alg_set = set()
     algs = list(hashlib.algorithms_available)
