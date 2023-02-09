@@ -71,7 +71,6 @@ class Digest:
         preimage: None | bytes = None,
         verbose: bool | int | float = False,
     ):
-
         self.algorithm = algorithm
         # @singledispatch would be nice here, could pass bytes or str and not need to unhexlify
         maxone([digest, preimage])
@@ -164,7 +163,6 @@ def hexdigest_str_path_relative(
     depth: int,
     verbose: bool | int | float = False,
 ) -> Path:
-
     path_elements = shard(
         hexdigest,
         width=width,
@@ -182,7 +180,6 @@ def hexdigest_str_path(
     depth: int,
     verbose: bool | int | float = False,
 ) -> Path:
-
     # root = Path(root).expanduser().resolve() # breaks uhashfs aliases
     root = Path(root)
     rel_path = hexdigest_str_path_relative(
@@ -286,7 +283,6 @@ def rhash_file_sh(
         digest_dict: dict,
         verbose: bool | int | float = False,
     ):
-
         digest_results = {}
         for key, hexdigest in digest_dict.items():
             # ic(hexdigest)
@@ -341,7 +337,6 @@ def rhash_file_sh(
         #    ic("sh.rhash got sh.SignalException_SIGALRM")
         #    assert rhash_command_result
         # ic(rhash_command_result)
-        # result = run_command(command, shell=True).decode('utf8')
     else:
         # if verbose:
         #    ic(path)
@@ -355,10 +350,8 @@ def rhash_file_sh(
             flock=True,
             verbose=verbose,
         ) as fl:
-
             rhash_command_result = rhash_command()
             # ic(rhash_command_result)
-            # result = run_command(command, shell=True).decode('utf8')
 
     assert rhash_command_result
     # ic(result)
@@ -394,7 +387,6 @@ def rhash_file(
         digest_dict: dict,
         verbose: bool | int | float = False,
     ):
-
         digest_results = {}
         for key, hexdigest in digest_dict.items():
             digest = binascii.unhexlify(hexdigest)
@@ -853,7 +845,6 @@ def cli(
     dict_output: bool,
     verbose: bool | int | float = False,
 ) -> None:
-
     tty, verbose = tv(
         ctx=ctx,
         verbose=verbose,
@@ -885,7 +876,6 @@ def _files(
     dict_output: bool,
     verbose: bool | int | float = False,
 ):
-
     tty, verbose = tv(
         ctx=ctx,
         verbose=verbose,
@@ -949,7 +939,6 @@ def _strings(
     dict_output: bool,
     verbose: bool | int | float = False,
 ):
-
     tty, verbose = tv(
         ctx=ctx,
         verbose=verbose,
@@ -992,7 +981,6 @@ def _empty_digests(
     dict_output: bool,
     verbose: bool | int | float = False,
 ):
-
     tty, verbose = tv(
         ctx=ctx,
         verbose=verbose,
@@ -1028,7 +1016,6 @@ def _empty_hexdigests(
     dict_output: bool,
     verbose: bool | int | float = False,
 ):
-
     tty, verbose = tv(
         ctx=ctx,
         verbose=verbose,

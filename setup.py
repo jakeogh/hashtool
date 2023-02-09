@@ -8,6 +8,7 @@ import fastentrypoints
 
 dependencies = [
     "advisory-lock @ git+https://git@github.com/jakeogh/advisory_lock",
+    "run-command @ git+https://git@github.com/jakeogh/run-command",
     "retry-on-exception @ git+https://git@github.com/jakeogh/retry_on_exception",
     "click-auto-help @ git+https://git@github.com/jakeogh/click-auto-help",
     "unmp @ git+https://git@github.com/jakeogh/unmp",
