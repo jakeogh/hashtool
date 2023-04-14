@@ -869,9 +869,9 @@ def cli(
 @click.pass_context
 def _files(
     ctx,
-    files: tuple[str],
+    files: tuple[str, ...],
     disable_locking: bool,
-    algorithms: tuple[str],
+    algorithms: tuple[str, ...],
     verbose_inf: bool,
     dict_output: bool,
     verbose: bool | int | float = False,
@@ -934,7 +934,7 @@ def _files(
 @click.pass_context
 def _strings(
     ctx,
-    algorithms: tuple[str],
+    algorithms: tuple[str, ...],
     verbose_inf: bool,
     dict_output: bool,
     verbose: bool | int | float = False,
@@ -976,7 +976,7 @@ def _strings(
 @click.pass_context
 def _empty_digests(
     ctx,
-    algorithms: tuple[str],
+    algorithms: tuple[str, ...],
     verbose_inf: bool,
     dict_output: bool,
     verbose: bool | int | float = False,
@@ -1011,7 +1011,7 @@ def _empty_digests(
 @click.pass_context
 def _empty_hexdigests(
     ctx,
-    algorithms: tuple[str],
+    algorithms: tuple[str, ...],
     verbose_inf: bool,
     dict_output: bool,
     verbose: bool | int | float = False,
