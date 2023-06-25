@@ -189,8 +189,35 @@ def shard(hexdigest, width, depth):
     )
 
 
-@lru_cache
 def generate_hashlib_algorithm_set():
+    return [
+        "sha1",
+        "ripemd160",
+        "sha512_256",
+        "md5",
+        "sha3_384",
+        "shake_256",
+        "mdc2",
+        "sm3",
+        "sha256",
+        "whirlpool",
+        "sha512",
+        "sha224",
+        "blake2s",
+        "sha3_224",
+        "md4",
+        "sha3_512",
+        "md5-sha1",
+        "blake2b",
+        "shake_128",
+        "sha512_224",
+        "sha384",
+        "sha3_256",
+    ]
+
+
+@lru_cache
+def re_generate_hashlib_algorithm_set():
     alg_set = set()
     algs = list(hashlib.algorithms_available)
     ic(algs)
@@ -825,5 +852,3 @@ def read_blocks(filename):
 #
 #    message = "Unable to detect width/depth."
 #    raise ValueError(message)
-
-
