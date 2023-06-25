@@ -35,7 +35,7 @@ config = {
     "install_requires": dependencies,
     "entry_points": {
         "console_scripts": [
-            "hashtool=hashtool.hashtool:cli",
+            "hashtool=hashtool.cli:cli",
         ],
     },
 }
