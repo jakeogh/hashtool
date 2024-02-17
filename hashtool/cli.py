@@ -54,7 +54,7 @@ def cli(
     ctx,
     verbose_inf: bool,
     dict_output: bool,
-    verbose: bool | int | float = False,
+    verbose: bool = False,
 ) -> None:
     tty, verbose = tv(
         ctx=ctx,
@@ -85,7 +85,7 @@ def _files(
     algorithms: tuple[str, ...],
     verbose_inf: bool,
     dict_output: bool,
-    verbose: bool | int | float = False,
+    verbose: bool = False,
 ):
     tty, verbose = tv(
         ctx=ctx,
@@ -148,7 +148,7 @@ def _strings(
     algorithms: tuple[str, ...],
     verbose_inf: bool,
     dict_output: bool,
-    verbose: bool | int | float = False,
+    verbose: bool = False,
 ):
     tty, verbose = tv(
         ctx=ctx,
@@ -190,7 +190,7 @@ def _empty_digests(
     algorithms: tuple[str, ...],
     verbose_inf: bool,
     dict_output: bool,
-    verbose: bool | int | float = False,
+    verbose: bool = False,
 ):
     tty, verbose = tv(
         ctx=ctx,
@@ -225,7 +225,7 @@ def _empty_hexdigests(
     algorithms: tuple[str, ...],
     verbose_inf: bool,
     dict_output: bool,
-    verbose: bool | int | float = False,
+    verbose: bool = False,
 ):
     tty, verbose = tv(
         ctx=ctx,
@@ -249,7 +249,7 @@ def _empty_hexdigests(
 # def hash_file_with_all_algorithms(
 #    path: Path,
 #    *,
-#    verbose: bool | int | float = False,
+#    verbose: bool = False,
 # ):
 #    if verbose:
 #        ic(path)

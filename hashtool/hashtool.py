@@ -60,7 +60,7 @@ class Digest:
         algorithm: str,
         digest: None | bytes = None,
         preimage: None | bytes = None,
-        verbose: bool | int | float = False,
+        verbose: bool = False,
     ):
         self.algorithm = algorithm
         # @singledispatch would be nice here, could pass bytes or str and not need to unhexlify
@@ -115,7 +115,7 @@ def md5_hash_file(
     path,
     *,
     block_size=256 * 128 * 2,
-    verbose: bool | int | float = False,
+    verbose: bool = False,
 ):
     md5 = hashlib.md5()
     with open(path, "rb") as f:
@@ -138,7 +138,7 @@ def emptyhash(alg):
 def hash_str(
     string: str,
     algorithm: str = "sha3_256",
-    verbose: bool | int | float = False,
+    verbose: bool = False,
 ):
     _digest = getattr(hashlib, algorithm)(string.encode("utf8"))
     # ic(algorithm, _digest)
@@ -152,7 +152,7 @@ def hexdigest_str_path_relative(
     hexdigest: str,
     width: int,
     depth: int,
-    verbose: bool | int | float = False,
+    verbose: bool = False,
 ) -> Path:
     path_elements = shard(
         hexdigest,
@@ -169,7 +169,7 @@ def hexdigest_str_path(
     hexdigest: str,
     width: int,
     depth: int,
-    verbose: bool | int | float = False,
+    verbose: bool = False,
 ) -> Path:
     # root = Path(root).expanduser().resolve() # breaks uhashfs aliases
     root = Path(root)
@@ -246,7 +246,7 @@ def hash_readable(
     handle,
     algorithm: str,
     tmp: None | _TemporaryFileWrapper,
-    verbose: bool | int | float = False,
+    verbose: bool = False,
 ) -> bytes:
     block_size = 256 * 128 * 2
     hashtool = hashlib.new(algorithm)
@@ -266,7 +266,7 @@ def hash_file(
     path: Path,
     *,
     algorithm: str,
-    verbose: bool | int | float = False,
+    verbose: bool = False,
     tmp: None | Path = None,
 ) -> bytes:
     path = Path(path).expanduser()
@@ -294,12 +294,12 @@ def rhash_file_sh(
     *,
     disable_locking: bool,
     algorithms: Iterable,
-    verbose: bool | int | float = False,
+    verbose: bool = False,
 ) -> dict:
     def convert_digest_dict_to_objects(
         *,
         digest_dict: dict,
-        verbose: bool | int | float = False,
+        verbose: bool = False,
     ):
         digest_results = {}
         for key, hexdigest in digest_dict.items():
@@ -398,12 +398,12 @@ def rhash_file(
     *,
     disable_locking: bool,
     algorithms: Iterable,
-    verbose: bool | int | float = False,
+    verbose: bool = False,
 ) -> dict:
     def convert_digest_dict_to_objects(
         *,
         digest_dict: dict,
-        verbose: bool | int | float = False,
+        verbose: bool = False,
     ):
         digest_results = {}
         for key, hexdigest in digest_dict.items():
@@ -504,7 +504,7 @@ class WDgen:
 # def generate_hash_sha1(
 #    data,
 #    *,
-#    verbose: bool | int | float = False,
+#    verbose: bool = False,
 # ):
 #    if not data:
 #        raise ValueError
@@ -607,7 +607,7 @@ class WDgen:
 def sha1_hash_file(
     path,
     *,
-    verbose: bool | int | float = False,
+    verbose: bool = False,
     block_size=256 * 128 * 2,
     binary=False,
 ):
@@ -622,7 +622,7 @@ def sha1_hash_file(
 
 def sha3_256_hash_file(
     path: Path,
-    verbose: bool | int | float = False,
+    verbose: bool = False,
     block_size: int = 256 * 128 * 2,
 ) -> bytes:
     if verbose:
@@ -781,7 +781,7 @@ def read_blocks(filename):
 
 # def bytes_dict_file(
 #    path,
-#    verbose: bool | int | float = False,
+#    verbose: bool = False,
 # ):
 #    bytes_dict = {}
 #    hashtool = hash_file_with_all_algorithms(
@@ -803,7 +803,7 @@ def read_blocks(filename):
 
 # def hex_dict_file(
 #    path,
-#    verbose: bool | int | float = False,
+#    verbose: bool = False,
 # ):
 #    bytes_dict = {}
 #    hashtool = hash_file_with_all_algorithms(
@@ -819,7 +819,7 @@ def read_blocks(filename):
 #    *,
 #    root: Path,
 #    alg: str,
-#    verbose: bool | int | float = False,
+#    verbose: bool = False,
 #    max_width: int = 5,
 #    max_depth: int = 5,
 # ):
