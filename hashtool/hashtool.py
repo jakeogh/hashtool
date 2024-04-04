@@ -427,7 +427,7 @@ def rhash_file(
     # epprint(f"{rhash_command=}")
     rhash_command_result = None
     if disable_locking:
-        rhash_command_result = run_command(rhash_command, verbose=True)
+        rhash_command_result = run_command(rhash_command, verbose=bool(gvd))
     else:
         with AdvisoryLock(
             path=path,
@@ -437,7 +437,7 @@ def rhash_file(
             open_write=False,  # lockf needs R/W
             flock=True,
         ) as fl:
-            rhash_command_result = run_command(rhash_command, verbose=True)
+            rhash_command_result = run_command(rhash_command, verbose=bool(gvd))
 
     # assert result
     assert rhash_command_result
