@@ -35,16 +35,17 @@ from clicktool import click_global_options
 from clicktool import tv
 from eprint import eprint
 from mptool import output
-from hashtool import hash_str
 from unmp import unmp
+
 from hashtool import generate_hashlib_algorithm_set
+from hashtool import hash_str
 from hashtool import rhash_file
+
 # from threading import Thread
 # from queue import Queue
 
 # from collections.abc import Sequence
 signal(SIGPIPE, SIG_DFL)
-
 
 
 @click.group(no_args_is_help=True, cls=AHGroup)
@@ -99,7 +100,6 @@ def _files(
             valid_types=[
                 bytes,
             ],
-            verbose=verbose,
         )
 
     for index, _path in enumerate(iterator):
@@ -111,7 +111,6 @@ def _files(
             path=path,
             disable_locking=disable_locking,
             algorithms=algorithms,
-            verbose=verbose,
         )
 
         for key, value in result.items():
@@ -121,7 +120,6 @@ def _files(
                     reason=_path,
                     dict_output=dict_output,
                     tty=tty,
-                    verbose=verbose,
                 )
             else:
                 output(
@@ -129,7 +127,6 @@ def _files(
                     reason=_path,
                     dict_output=dict_output,
                     tty=tty,
-                    verbose=verbose,
                 )
 
 
@@ -166,13 +163,12 @@ def _strings(
 
     algorithm = algorithms[0]
     for index, _str in enumerate(iterator):
-        _str_hash = hash_str(_str, algorithm=algorithm, verbose=verbose)
+        _str_hash = hash_str(_str, algorithm=algorithm)
         output(
             _str_hash,
             reason=_str,
             dict_output=dict_output,
             tty=tty,
-            verbose=verbose,
         )
 
 
