@@ -145,6 +145,20 @@ def hash_str(
     return _digest
 
 
+def multi_hash_str(
+    string: str,
+    algorithms: tuple[str, ...],
+):
+    digest_dict = {}
+    for _alg in algorithms:
+        _digest = getattr(hashlib, _alg)(string.encode("utf8"))
+        _digest = _digest.digest()
+        ic(_alg, _digest)
+        digest_dict[_alg] = _digest
+
+    return digest_dict
+
+
 def hexdigest_str_path_relative(
     *,
     hexdigest: str,
