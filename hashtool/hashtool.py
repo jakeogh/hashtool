@@ -46,6 +46,7 @@ from globalverbose import gvd
 from retry_on_exception import retry_on_exception
 from run_command import run_command
 
+logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger()
 icp(logger)
 
