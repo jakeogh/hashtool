@@ -432,8 +432,10 @@ def rhash_file(
             raise NotImplementedError(algorithm)
 
     format_string = " ".join(format_string)
+    icp(format_string)
     sh_command = sh_command.bake(f"--printf='{format_string}'")
-    sh_command = sh_command.bake(f"'{path.as_posix()}'")
+    sh_command = sh_command.bake(path.as_posix())
+    icp(sh_command)
 
     # epprint(f"{rhash_command=}")
     rhash_command_result = None
