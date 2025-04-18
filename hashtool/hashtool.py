@@ -432,10 +432,10 @@ def rhash_file(
             raise NotImplementedError(algorithm)
 
     format_string = " ".join(format_string)
-    icp(format_string)
+    # icp(format_string)
     sh_command = sh_command.bake(f"--printf={format_string}")
     sh_command = sh_command.bake(path.as_posix())
-    icp(sh_command)
+    # icp(sh_command)
 
     # epprint(f"{rhash_command=}")
     rhash_command_result = None
@@ -453,9 +453,9 @@ def rhash_file(
             rhash_command_result = sh_command()
 
     assert rhash_command_result
-    icp(rhash_command_result)
+    # icp(rhash_command_result)
     results = rhash_command_result.split(" ")
-    icp(results)
+    # icp(results)
     for result in results:
         # ic(result)
         alg, hexdigest = result.split(":")
