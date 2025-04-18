@@ -49,7 +49,7 @@ from run_command import run_command
 logging.basicConfig(level=logging.WARNING)
 logging.getLogger("sh").setLevel(logging.WARNING)
 logger = logging.getLogger()
-icp(logger)
+# icp(logger)
 
 # from threading import Thread
 # from queue import Queue
@@ -423,7 +423,7 @@ def rhash_file(
     assert algorithms
     result_dict = {}
     format_string = []
-    icp(logger)
+    # icp(logger)
     sh_command = sh.Command("rhash")
     for algorithm in algorithms:
         if algorithm == "sha3_256":
