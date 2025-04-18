@@ -433,7 +433,7 @@ def rhash_file(
 
     format_string = " ".join(format_string)
     icp(format_string)
-    sh_command = sh_command.bake(f"--printf='{format_string}'")
+    sh_command = sh_command.bake(f"--printf={format_string}")
     sh_command = sh_command.bake(path.as_posix())
     icp(sh_command)
 
