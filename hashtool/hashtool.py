@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import binascii
 import hashlib
+import logging
 import os
 import sys
 from functools import lru_cache
@@ -44,6 +45,9 @@ from asserttool import maxone
 from globalverbose import gvd
 from retry_on_exception import retry_on_exception
 from run_command import run_command
+
+logger = logging.getLogger()
+icp(logger)
 
 # from threading import Thread
 # from queue import Queue
@@ -417,6 +421,7 @@ def rhash_file(
     assert algorithms
     result_dict = {}
     format_string = []
+    icp(logger)
     sh_command = sh.Command("rhash")
     for algorithm in algorithms:
         if algorithm == "sha3_256":
