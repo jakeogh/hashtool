@@ -39,6 +39,7 @@ import attr
 import sh
 from advisory_lock import AdvisoryLock
 from asserttool import ic
+from asserttool import icp
 from asserttool import maxone
 from globalverbose import gvd
 from retry_on_exception import retry_on_exception
@@ -416,32 +417,28 @@ def rhash_file(
     assert algorithms
     result_dict = {}
     format_string = []
-    command = [
-        "rhash",
-    ]
+    sh_command = sh.Command("rhash")
     for algorithm in algorithms:
         if algorithm == "sha3_256":
-            command.append("--sha3-256")
+            sh_command = sh_command.bake("--sha3-256")
             format_string.append("sha3_256:%{sha3-256}")
         elif algorithm == "sha256":
-            command.append("--sha256")
+            sh_command = sh_command.bake("--sha256")
             format_string.append("sha256:%{sha-256}")
         elif algorithm == "sha1":
-            command.append("--sha1")
+            sh_command = sh_command.bake("--sha1")
             format_string.append("sha1:%{sha1}")
         else:
             raise NotImplementedError(algorithm)
 
     format_string = " ".join(format_string)
-    format_string = f"--printf='{format_string}'"
-    command.append(format_string)
-    command.append(f"'{path.as_posix()}'")
-    rhash_command = " ".join(command)
+    sh_command = sh_command.bake(f"--printf='{format_string}'")
+    sh_command = sh_command.bake(f"'{path.as_posix()}'")
 
     # epprint(f"{rhash_command=}")
     rhash_command_result = None
     if disable_locking:
-        rhash_command_result = run_command(rhash_command, verbose=bool(gvd))
+        rhash_command_result = sh_command()
     else:
         with AdvisoryLock(
             path=path,
@@ -451,12 +448,10 @@ def rhash_file(
             open_write=False,  # lockf needs R/W
             flock=True,
         ) as fl:
-            rhash_command_result = run_command(rhash_command, verbose=bool(gvd))
+            rhash_command_result = sh_command()
 
-    # assert result
     assert rhash_command_result
-    # ic(result)
-    # ic(rhash_command_result)
+    icp(rhash_command_result)
     results = rhash_command_result.decode("utf8").split(" ")
     for result in results:
         # ic(result)
