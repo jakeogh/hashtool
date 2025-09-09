@@ -517,7 +517,7 @@ def sha3_256_hash_file(
     path: Path,
     block_size: int = 256 * 128 * 2,
 ) -> bytes:
-    ic(path)
+    # ic(path)
     sha3 = hashlib.sha3_256()
     with open(path, "rb") as f:
         for chunk in iter(lambda: f.read(block_size), b""):
