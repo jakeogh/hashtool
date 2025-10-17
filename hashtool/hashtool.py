@@ -1,24 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf8 -*-
 
-# pylint: disable=useless-suppression             # [I0021]
-# pylint: disable=missing-docstring               # [C0111] docstrings are always outdated and wrong
-# pylint: disable=fixme                           # [W0511] todo is encouraged
-# pylint: disable=line-too-long                   # [C0301]
-# pylint: disable=too-many-instance-attributes    # [R0902]
-# pylint: disable=too-many-lines                  # [C0302] too many lines in module
-# pylint: disable=invalid-name                    # [C0103] single letter var names, name too descriptive
-# pylint: disable=too-many-return-statements      # [R0911]
-# pylint: disable=too-many-branches               # [R0912]
-# pylint: disable=too-many-statements             # [R0915]
-# pylint: disable=too-many-arguments              # [R0913]
-# pylint: disable=too-many-nested-blocks          # [R1702]
-# pylint: disable=too-many-locals                 # [R0914]
-# pylint: disable=too-few-public-methods          # [R0903]
-# pylint: disable=no-member                       # [E1101] no member for base
-# pylint: disable=attribute-defined-outside-init  # [W0201]
-# pylint: disable=too-many-boolean-expressions    # [R0916] in if statement
-
 from __future__ import annotations
 
 import binascii
@@ -28,7 +10,6 @@ import os
 import sys
 from functools import lru_cache
 from itertools import product
-from math import inf
 from pathlib import Path
 from signal import SIG_DFL
 from signal import SIGPIPE
@@ -40,11 +21,9 @@ import attr
 import sh
 from advisory_lock import AdvisoryLock
 from asserttool import ic
-from asserttool import icp
 from asserttool import maxone
 from globalverbose import gvd
 from retry_on_exception import retry_on_exception
-from run_command import run_command
 
 logging.basicConfig(level=logging.WARNING)
 logging.getLogger("sh").setLevel(logging.WARNING)
@@ -199,7 +178,11 @@ def hexdigest_str_path(
     return path
 
 
-def shard(hexdigest, width, depth):
+def shard(
+    hexdigest,
+    width,
+    depth,
+):
     return compact(
         [hexdigest[i * width : width * (i + 1)] for i in range(depth)] + [hexdigest]
     )
@@ -271,7 +254,12 @@ def hash_readable(
             tmp.write(chunk)
     if tmp:
         # hm, tmp.file.name is an int
-        os.posix_fadvise(tmp.file.name, 0, 0, os.POSIX_FADV_DONTNEED)
+        os.posix_fadvise(
+            tmp.file.name,
+            0,
+            0,
+            os.POSIX_FADV_DONTNEED,
+        )
         tmp.close()
     return hashtool.digest()
 
@@ -293,11 +281,21 @@ def hash_file(
             tmp=tmp,
         )
     except Exception as e:
-        os.posix_fadvise(fd, 0, 0, os.POSIX_FADV_DONTNEED)
+        os.posix_fadvise(
+            fd,
+            0,
+            0,
+            os.POSIX_FADV_DONTNEED,
+        )
         fh.close()
         raise e
     finally:
-        os.posix_fadvise(fd, 0, 0, os.POSIX_FADV_DONTNEED)
+        os.posix_fadvise(
+            fd,
+            0,
+            0,
+            os.POSIX_FADV_DONTNEED,
+        )
         fh.close()
     return digest
 

@@ -1,0 +1,43 @@
+[build-system]
+requires = [
+    "setuptools>=61.0",
+]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "hashtool"
+version = "0.1"
+description = "common hash functions"
+authors = [
+    { name = "Justin Keogh", email = "github.com@v6y.net" },
+]
+dependencies = [
+    "advisory-lock @ git+https://git@github.com/jakeogh/advisory_lock",
+    "run-command @ git+https://git@github.com/jakeogh/run-command",
+    "retry-on-exception @ git+https://git@github.com/jakeogh/retry_on_exception",
+    "click-auto-help @ git+https://git@github.com/jakeogh/click-auto-help",
+    "unmp @ git+https://git@github.com/jakeogh/unmp",
+    "mpp @ git+https://git@github.com/jakeogh/mpp",
+    "psutil",
+    "attrs",
+    "sh",
+]
+requires-python = ">=3.11"
+
+[project.license]
+text = "ISC"
+
+[project.urls]
+Homepage = "https://github.com/jakeogh/hashtool"
+
+[project.scripts]
+hashtool = "hashtool.cli:cli"
+
+[tool.setuptools]
+include-package-data = true
+zip-safe = false
+
+[tool.setuptools.package-data]
+hashtool = [
+    "py.typed",
+]
