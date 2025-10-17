@@ -16,7 +16,6 @@ dependencies = [
     "asserttool @ git+https://github.com/jakeogh/asserttool",
     "attr",
     "attrs",
-    "binascii",
     "click",
     "click-auto-help @ git+https://github.com/jakeogh/click-auto-help",
     "clicktool @ git+https://github.com/jakeogh/clicktool",
