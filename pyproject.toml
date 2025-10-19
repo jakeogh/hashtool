@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "hashtool"
-version = "0.0.1760909304"
+version = "0.0.1760909461"
 description = "common hash functions"
 authors = [
     { name = "Justin Keogh", email = "github.com@v6y.net" },
@@ -27,10 +27,8 @@ dependencies = [
     "sh",
     "unmp @ git+https://github.com/jakeogh/unmp",
 ]
-requires-python = ">=3.11"
-
-[project.license]
 license = "ISC"
+requires-python = ">=3.11"
 
 [project.urls]
 Homepage = "https://github.com/jakeogh/hashtool"
