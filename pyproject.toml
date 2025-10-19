@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "hashtool"
-version = "0.1"
+version = "0.0.1760909304"
 description = "common hash functions"
 authors = [
     { name = "Justin Keogh", email = "github.com@v6y.net" },
@@ -16,7 +16,6 @@ dependencies = [
     "asserttool @ git+https://github.com/jakeogh/asserttool",
     "attr",
     "attrs",
-    "click",
     "click-auto-help @ git+https://github.com/jakeogh/click-auto-help",
     "clicktool @ git+https://github.com/jakeogh/clicktool",
     "eprint @ git+https://github.com/jakeogh/eprint",
@@ -25,13 +24,13 @@ dependencies = [
     "psutil",
     "retry-on-exception @ git+https://github.com/jakeogh/retry-on-exception",
     "run-command @ git+https://github.com/jakeogh/run-command",
-    "sh @ git+https://github.com/jakeogh/sh",
+    "sh",
     "unmp @ git+https://github.com/jakeogh/unmp",
 ]
 requires-python = ">=3.11"
 
 [project.license]
-text = "ISC"
+license = "ISC"
 
 [project.urls]
 Homepage = "https://github.com/jakeogh/hashtool"
