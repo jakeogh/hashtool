@@ -159,18 +159,31 @@ def hash_file(
     fd = os.open(path, os.O_RDONLY)
 
     try:
-        with os.fdopen(fd, 'rb') as fh:
-            digest = hash_readable(fh, algorithm, block_size, tmp)
-            os.posix_fadvise(fd, 0, 0, os.POSIX_FADV_DONTNEED)
+        with os.fdopen(fd, "rb") as fh:
+            digest = hash_readable(
+                fh,
+                algorithm,
+                block_size,
+                tmp,
+            )
+            os.posix_fadvise(
+                fd,
+                0,
+                0,
+                os.POSIX_FADV_DONTNEED,
+            )
         return digest
     except Exception:
         try:
-            os.posix_fadvise(fd, 0, 0, os.POSIX_FADV_DONTNEED)
+            os.posix_fadvise(
+                fd,
+                0,
+                0,
+                os.POSIX_FADV_DONTNEED,
+            )
         except:
             pass
         raise
-
-
 
 
 def multi_hash_file(
