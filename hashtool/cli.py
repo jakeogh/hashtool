@@ -19,9 +19,9 @@ from eprint import eprint
 from mptool import output
 from unmp import unmp
 
-from hashtool import get_available_algorithms
-from hashtool import hash_str
-from hashtool import rhash_file
+from .hashtool import get_available_algorithms
+from .hashtool import hash_str
+from .hashtool import rhash_file
 
 # from threading import Thread
 # from queue import Queue
@@ -54,7 +54,7 @@ def cli(
 @click.option(
     "--algorithm",
     "algorithms",
-    type=click.Choice(generate_hashlib_algorithm_set()),
+    type=click.Choice(get_available_algorithms()),
     default=["sha3_256"],
     multiple=True,
 )
@@ -116,7 +116,7 @@ def _files(
 @click.option(
     "--algorithm",
     "algorithms",
-    type=click.Choice(generate_hashlib_algorithm_set()),
+    type=click.Choice(get_available_algorithms()),
     default=["sha3_256"],
     multiple=True,
 )
@@ -158,7 +158,7 @@ def _strings(
 @click.option(
     "--algorithm",
     "algorithms",
-    type=click.Choice(generate_hashlib_algorithm_set()),
+    type=click.Choice(get_available_algorithms()),
     multiple=True,
 )
 @click_add_options(click_global_options)
@@ -177,7 +177,7 @@ def _empty_digests(
     )
 
     if not algorithms:
-        algorithms = generate_hashlib_algorithm_set()
+        algorithms = get_available_algorithms()
 
     for _alg in algorithms:
         _str_hash = hash_str("", algorithm=_alg)
@@ -193,7 +193,7 @@ def _empty_digests(
 @click.option(
     "--algorithm",
     "algorithms",
-    type=click.Choice(generate_hashlib_algorithm_set()),
+    type=click.Choice(get_available_algorithms()),
     multiple=True,
 )
 @click_add_options(click_global_options)
@@ -212,7 +212,7 @@ def _empty_hexdigests(
     )
 
     if not algorithms:
-        algorithms = generate_hashlib_algorithm_set()
+        algorithms = get_available_algorithms()
 
     for _alg in algorithms:
         _str_hash = hash_str("", algorithm=_alg)
@@ -223,16 +223,3 @@ def _empty_hexdigests(
             tty=tty,
         )
 
-
-# def hash_file_with_all_algorithms(
-#    path: Path,
-#    *,
-#    verbose: bool = False,
-# ):
-#    if verbose:
-#        ic(path)
-#    path = Path(path).expanduser().resolve()
-#    hashtool = MtHasher()
-#    for data in read_blocks(path):
-#        hashtool.update(data)
-#    return hashtool
