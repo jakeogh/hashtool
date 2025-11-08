@@ -1,33 +1,24 @@
 #!/usr/bin/env python3
-# -*- coding: utf8 -*-
 
 from __future__ import annotations
 
 import binascii
 import hashlib
-import logging
 import os
 import sys
+from collections.abc import Iterable
 from functools import lru_cache
-from itertools import product
 from pathlib import Path
 from signal import SIG_DFL
 from signal import SIGPIPE
 from signal import signal
 from tempfile import _TemporaryFileWrapper
-from typing import Iterable
+from typing import BinaryIO
 
-import attr
-import hs
-from advisory_lock import AdvisoryLock
-from asserttool import ic
-from asserttool import maxone
-from globalverbose import gvd
-
-logging.basicConfig(level=logging.WARNING)
-logging.getLogger("sh").setLevel(logging.WARNING)
-logger = logging.getLogger()
 signal(SIGPIPE, SIG_DFL)
+
+# Constants
+BLOCK_SIZE: int = 65536  # 64KB for better performance
 
 
 class IncorrectHashError(ValueError):
@@ -35,536 +26,322 @@ class IncorrectHashError(ValueError):
 
 
 class Digest:
+    """Immutable hash digest wrapper with validation."""
+
+    __slots__ = ("algorithm", "digest", "hexdigest", "digestlen", "hexdigestlen")
+
     def __init__(
         self,
         algorithm: str,
-        digest: None | bytes = None,
-        preimage: None | bytes = None,
-        verbose: bool = False,
-    ):
+        digest: bytes | None = None,
+        preimage: bytes | None = None,
+    ) -> None:
+        if (digest is None) == (preimage is None):
+            raise ValueError("Exactly one of digest or preimage must be provided")
+
         self.algorithm = algorithm
-        # @singledispatch would be nice here, could pass bytes or str and not need to unhexlify
-        maxone([digest, preimage])
-        # one([digest, preimage])  fails on [None, b'']
-        if digest is None:
-            assert isinstance(preimage, bytes)
-        if digest:
-            assert isinstance(digest, bytes)
-        if preimage is not None:
-            assert isinstance(preimage, bytes)
 
         if preimage is not None:
-            assert digest is None
-            digest = getattr(hashlib, self.algorithm)(preimage).digest()
+            digest = hashlib.new(algorithm, preimage).digest()
 
+        assert digest is not None
         self.digest = digest
         self.hexdigest = digest.hex()
-        ic(self.hexdigest)
-
-        # try:
-        #    int(hexdigest, 16)
-        # except ValueError:
-        #    raise ValueError('Invalid ID: "{0}" is not hex'.format(hexdigest))
-        # self.digest = binascii.unhexlify(self.hexdigest)
-        self.digestlen = hashlib.new(self.algorithm).digest_size
+        self.digestlen = hashlib.new(algorithm).digest_size
         self.hexdigestlen = self.digestlen * 2
+
         if len(self.digest) != self.digestlen:
-            msg = "hexdigest {} is not {} bytes long, as required by {}".format(
-                self.hexdigest, self.hexdigestlen, self.algorithm
+            raise ValueError(
+                f"Digest {self.hexdigest} is {len(self.digest)} bytes, "
+                f"expected {self.digestlen} for {algorithm}"
             )
-            raise ValueError(msg)
-            # raise ValueError('Invalid ID: "{}" is not {} digits long (len() is {})'.format(hexdigest, self.hexdigestlen,  len(hexdigest)))
 
-    def __str__(self):
-        return "<uhashfs.Digest " + self.hexdigest + ">"
+    def __str__(self) -> str:
+        return f"<Digest {self.algorithm}:{self.hexdigest}>"
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return str(self)
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self.digest)
 
-    def __eq__(self, other):
-        if self.digest == other.digest:
-            return True
-        return False
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, Digest):
+            return NotImplemented
+        return self.digest == other.digest
+
+    def __hash__(self) -> int:
+        return hash(self.digest)
 
 
-def md5_hash_file(
-    path,
-    *,
-    block_size=256 * 128 * 2,
-):
-    md5 = hashlib.md5()
-    with open(path, "rb") as f:
-        for chunk in iter(lambda: f.read(block_size), b""):
-            md5.update(chunk)
-    return md5.hexdigest()
-
-
-# todo kcl.iterops breakout
-def compact(items):
-    return [item for item in items if item]
-
-
-def emptyhash(alg):
-    emptydigest = getattr(hashlib, alg)(b"").digest()
-    emptyhexdigest = emptydigest.hex()
-    return emptyhexdigest
-
-
-def hash_str(
-    string: str,
-    algorithm: str = "sha3_256",
-):
-    _digest = getattr(hashlib, algorithm)(string.encode("utf8"))
-    # ic(algorithm, _digest)
-    _digest = _digest.digest()
-    # hexdigest = digest.hex()
-    return _digest
-
-
-def multi_hash_str(
-    string: str,
-    algorithms: tuple[str, ...],
-):
-    digest_dict = {}
-    for _alg in algorithms:
-        _digest = getattr(hashlib, _alg)(string.encode("utf8"))
-        _digest = _digest.digest()
-        ic(_alg, _digest)
-        digest_dict[_alg] = _digest
-
-    return digest_dict
-
-
-def hexdigest_str_path_relative(
-    *,
-    hexdigest: str,
-    width: int,
-    depth: int,
-) -> Path:
-    path_elements = shard(
-        hexdigest,
-        width=width,
-        depth=depth,
-    )
-    rel_path = Path(os.path.join(*path_elements))
-    return rel_path
-
-
-def hexdigest_str_path(
-    *,
-    root: Path,
-    hexdigest: str,
-    width: int,
-    depth: int,
-) -> Path:
-    # root = Path(root).expanduser().resolve() # breaks uhashfs aliases
-    root = Path(root)
-    rel_path = hexdigest_str_path_relative(
-        hexdigest=hexdigest,
-        width=width,
-        depth=depth,
-    )
-    path = root / rel_path
-    return path
-
-
-def shard(
-    hexdigest,
-    width,
-    depth,
-):
-    return compact(
-        [hexdigest[i * width : width * (i + 1)] for i in range(depth)] + [hexdigest]
-    )
-
-
-def generate_hashlib_algorithm_set():
-    return [
-        "sha1",
+@lru_cache(maxsize=1)
+def get_available_algorithms() -> list[str]:
+    """Get list of usable hash algorithms, filtering out problematic ones."""
+    excluded = {
         "ripemd160",
-        "sha512_256",
-        "md5",
-        "sha3_384",
-        "shake_256",
-        "mdc2",
-        "sm3",
-        "sha256",
-        "whirlpool",
-        "sha512",
-        "sha224",
-        "blake2s",
-        "sha3_224",
-        "md4",
-        "sha3_512",
-        "md5-sha1",
-        "blake2b",
-        "shake_128",
         "sha512_224",
-        "sha384",
-        "sha3_256",
-    ]
-
-
-@lru_cache
-def re_generate_hashlib_algorithm_set():
-    alg_set = set()
-    algs = list(hashlib.algorithms_available)
-    ic(algs)
-    for alg in algs:
-        if alg in [
-            "ripemd160",
-            "sha512_224",
-            "sm3",
-            "whirlpool",
-            "md5-sha1",
-            "sha512_256",
-            "md4",
-            "mdc2",
-        ]:
+        "sm3",
+        "whirlpool",
+        "md5-sha1",
+        "sha512_256",
+        "md4",
+        "mdc2",
+    }
+    algs = []
+    for alg in hashlib.algorithms_available:
+        if alg in excluded or alg.startswith("shake_"):
             continue
-        if alg.startswith("shake_"):
-            continue
-        if alg.startswith("sha3"):
+        if alg.startswith("sha3-"):
             alg = alg.replace("-", "_")
-        alg_set.add(alg)
-    return list(alg_set)
+        algs.append(alg)
+    return sorted(algs)
+
+
+def emptyhash(algorithm: str) -> str:
+    """Return hex digest of empty bytes for given algorithm."""
+    return hashlib.new(algorithm, b"").hexdigest()
+
+
+def hash_bytes(data: bytes, algorithm: str = "sha3_256") -> bytes:
+    """Hash bytes and return digest."""
+    return hashlib.new(algorithm, data).digest()
+
+
+def hash_str(string: str, algorithm: str = "sha3_256") -> bytes:
+    """Hash string (UTF-8 encoded) and return digest."""
+    return hash_bytes(string.encode("utf8"), algorithm)
+
+
+def multi_hash_bytes(data: bytes, algorithms: Iterable[str]) -> dict[str, bytes]:
+    """Hash data with multiple algorithms, return dict of digests."""
+    return {alg: hashlib.new(alg, data).digest() for alg in algorithms}
+
+
+def multi_hash_str(string: str, algorithms: Iterable[str]) -> dict[str, bytes]:
+    """Hash string with multiple algorithms, return dict of digests."""
+    return multi_hash_bytes(string.encode("utf8"), algorithms)
 
 
 def hash_readable(
-    *,
-    handle,
+    handle: BinaryIO,
     algorithm: str,
-    tmp: None | _TemporaryFileWrapper,
+    block_size: int = BLOCK_SIZE,
+    tmp: _TemporaryFileWrapper | None = None,
 ) -> bytes:
-    block_size = 256 * 128 * 2
-    hashtool = hashlib.new(algorithm)
-    for chunk in iter(lambda: handle.read(block_size), b""):
-        hashtool.update(chunk)
+    """Hash a readable binary file handle."""
+    hasher = hashlib.new(algorithm)
+    while chunk := handle.read(block_size):
+        hasher.update(chunk)
         if tmp:
             tmp.write(chunk)
+
     if tmp:
-        # hm, tmp.file.name is an int
-        os.posix_fadvise(
-            tmp.file.name,
-            0,
-            0,
-            os.POSIX_FADV_DONTNEED,
-        )
+        if isinstance(tmp.file.name, int):
+            os.posix_fadvise(
+                tmp.file.name,
+                0,
+                0,
+                os.POSIX_FADV_DONTNEED,
+            )
         tmp.close()
-    return hashtool.digest()
+
+    return hasher.digest()
 
 
-# @retry_on_exception(exception=PermissionError) # wrong level to do that
 def hash_file(
-    path: Path,
-    *,
+    path: Path | str,
     algorithm: str,
-    tmp: None | Path = None,
+    block_size: int = BLOCK_SIZE,
+    tmp: _TemporaryFileWrapper | None = None,
 ) -> bytes:
+    """Hash a file and return digest bytes."""
     path = Path(path).expanduser()
     fd = os.open(path, os.O_RDONLY)
-    fh = os.fdopen(fd, "rb")
+
     try:
-        digest = hash_readable(
-            handle=fh,
-            algorithm=algorithm,
-            tmp=tmp,
-        )
-    except Exception as e:
-        os.posix_fadvise(
-            fd,
-            0,
-            0,
-            os.POSIX_FADV_DONTNEED,
-        )
-        fh.close()
-        raise e
-    finally:
-        os.posix_fadvise(
-            fd,
-            0,
-            0,
-            os.POSIX_FADV_DONTNEED,
-        )
-        fh.close()
-    return digest
-
-
-def rhash_file_sh(
-    path: Path,
-    *,
-    disable_locking: bool,
-    algorithms: Iterable,
-) -> dict:
-    def convert_digest_dict_to_objects(
-        *,
-        digest_dict: dict,
-    ):
-        digest_results = {}
-        for key, hexdigest in digest_dict.items():
-            # ic(hexdigest)
-            digest = binascii.unhexlify(hexdigest)
-            digest = Digest(
-                algorithm=key,
-                digest=digest,
+        with os.fdopen(fd, "rb") as fh:
+            digest = hash_readable(
+                fh,
+                algorithm,
+                block_size,
+                tmp,
             )
-            digest_results[key] = digest
-        return digest_results
+        os.posix_fadvise(
+            fd,
+            0,
+            0,
+            os.POSIX_FADV_DONTNEED,
+        )
+        return digest
+    except Exception:
+        try:
+            os.posix_fadvise(
+                fd,
+                0,
+                0,
+                os.POSIX_FADV_DONTNEED,
+            )
+            os.close(fd)
+        except:
+            pass
+        raise
 
-    ic(disable_locking, path)
-    path = Path(path).expanduser().resolve()
-    assert algorithms
-    result_dict = {}
-    format_string = []
-    # command = ['rhash',]
-    rhash_command = hs.Command("rhash")
-    for algorithm in algorithms:
-        if algorithm == "sha3_256":
-            # command.append('--sha3-256')
-            rhash_command.bake("--sha3-256")
-            format_string.append("sha3_256:%{sha3-256}")
-        elif algorithm == "sha256":
-            # command.append('--sha256')
-            rhash_command.bake("--sha256")
-            format_string.append("sha256:%{sha-256}")
-        elif algorithm == "sha1":
-            # command.append('--sha1')
-            rhash_command.bake("--sha1")
-            format_string.append("sha1:%{sha1}")
-        else:
-            raise NotImplementedError(algorithm)
 
-    format_string = " ".join(format_string)
-    format_string = f"--printf={format_string}"
-    # command.append(format_string)
-    rhash_command.bake(format_string)
-    # command.append(path.as_posix())
-    rhash_command.bake(path.as_posix())
+def multi_hash_file(
+    path: Path | str,
+    algorithms: Iterable[str],
+    block_size: int = BLOCK_SIZE,
+) -> dict[str, bytes]:
+    """Hash a file with multiple algorithms efficiently (single pass)."""
+    path = Path(path).expanduser()
+    hashers = {alg: hashlib.new(alg) for alg in algorithms}
 
-    # ic(rhash_command)
+    fd = os.open(path, os.O_RDONLY)
+    try:
+        with os.fdopen(fd, "rb") as fh:
+            while chunk := fh.read(block_size):
+                for hasher in hashers.values():
+                    hasher.update(chunk)
+        os.posix_fadvise(
+            fd,
+            0,
+            0,
+            os.POSIX_FADV_DONTNEED,
+        )
+    except Exception:
+        try:
+            os.posix_fadvise(
+                fd,
+                0,
+                0,
+                os.POSIX_FADV_DONTNEED,
+            )
+            os.close(fd)
+        except:
+            pass
+        raise
 
-    rhash_command_result = None
-    if disable_locking:
-        # try:
-        rhash_command_result = rhash_command()
-        # except hs.SignalException_SIGALRM:
-        #    ic("hs.rhash got hs.SignalException_SIGALRM")
-        #    assert rhash_command_result
-        # ic(rhash_command_result)
-    else:
-        # ic(path)
-        with AdvisoryLock(
-            path=path,
-            file_exists=True,
-            open_read=True,
-            # open_write=True,  #lockf needs R/W
-            open_write=False,  # lockf needs R/W
-            flock=True,
-        ) as _:
-            rhash_command_result = rhash_command()
-            # ic(rhash_command_result)
-
-    assert rhash_command_result
-    # ic(result)
-    # ic(rhash_command_result)
-    results = rhash_command_result.split(" ")
-    for result in results:
-        # ic(result)
-        alg, hexdigest = result.split(":")
-        result_dict[alg] = hexdigest
-
-    if gvd:
-        _path = path.as_posix()
-        ic(_path, result_dict)
-        del _path
-
-    # ic(result_dict)
-    digest_results = convert_digest_dict_to_objects(
-        digest_dict=result_dict,
-    )
-    return digest_results
+    return {alg: hasher.digest() for alg, hasher in hashers.items()}
 
 
 def rhash_file(
-    path: Path,
-    *,
-    disable_locking: bool,
-    algorithms: Iterable,
-) -> dict:
-    def convert_digest_dict_to_objects(
-        *,
-        digest_dict: dict,
-    ):
-        digest_results = {}
-        for key, hexdigest in digest_dict.items():
-            digest = binascii.unhexlify(hexdigest)
-            digest = Digest(
-                algorithm=key,
-                digest=digest,
-            )
-            digest_results[key] = digest
-        return digest_results
+    path: Path | str,
+    algorithms: Iterable[str],
+    disable_locking: bool = False,
+) -> dict[str, Digest]:
+    """
+    Hash file using external rhash tool for better performance.
+    Returns dict of Digest objects keyed by algorithm name.
+    Requires: pip install hs advisory-lock
+    """
+    import hs
+    from advisory_lock import AdvisoryLock
 
-    if gvd:
-        ic(disable_locking, path)
     path = Path(path).expanduser().resolve()
-    assert algorithms
-    result_dict = {}
-    format_string = []
-    # icp(logger)
-    sh_command = hs.Command("rhash")
-    for algorithm in algorithms:
-        if algorithm == "sha3_256":
-            sh_command.bake("--sha3-256")
-            format_string.append("sha3_256:%{sha3-256}")
-        elif algorithm == "sha256":
-            sh_command.bake("--sha256")
-            format_string.append("sha256:%{sha-256}")
-        elif algorithm == "sha1":
-            sh_command.bake("--sha1")
-            format_string.append("sha1:%{sha1}")
-        else:
-            raise NotImplementedError(algorithm)
+    algorithms = list(algorithms)
+    if not algorithms:
+        raise ValueError("No algorithms specified")
 
-    format_string = " ".join(format_string)
-    # icp(format_string)
-    sh_command.bake(f"--printf={format_string}")
-    sh_command.bake(path.as_posix())
-    # icp(sh_command)
+    # Map algorithm names to rhash flags and format specifiers
+    alg_map = {
+        "sha3_256": ("--sha3-256", "sha3_256:%{sha3-256}"),
+        "sha256": ("--sha256", "sha256:%{sha-256}"),
+        "sha1": ("--sha1", "sha1:%{sha1}"),
+    }
 
-    # epprint(f"{rhash_command=}")
-    rhash_command_result = None
+    cmd = hs.Command("rhash")
+    format_parts = []
+
+    for alg in algorithms:
+        if alg not in alg_map:
+            raise NotImplementedError(f"rhash support not implemented for {alg}")
+        flag, fmt = alg_map[alg]
+        cmd.bake(flag)
+        format_parts.append(fmt)
+
+    cmd.bake(f"--printf={' '.join(format_parts)}")
+    cmd.bake(path.as_posix())
+
+    def run_rhash() -> str:
+        result = cmd()
+        if not result:
+            raise RuntimeError("rhash returned empty result")
+        return result
+
     if disable_locking:
-        rhash_command_result = sh_command()
+        output = run_rhash()
     else:
         with AdvisoryLock(
             path=path,
             file_exists=True,
             open_read=True,
-            # open_write=True,  #lockf needs R/W
-            open_write=False,  # lockf needs R/W
+            open_write=False,
             flock=True,
-        ) as _:
-            rhash_command_result = sh_command()
+        ):
+            output = run_rhash()
 
-    assert rhash_command_result
-    # icp(rhash_command_result)
-    results = rhash_command_result.split(" ")
-    # icp(results)
-    for result in results:
-        # ic(result)
-        alg, hexdigest = result.split(":")
-        result_dict[alg] = hexdigest
+    # Parse output: "alg1:hexdigest1 alg2:hexdigest2"
+    results = {}
+    for part in output.split():
+        alg, hexdigest = part.split(":", 1)
+        digest_bytes = binascii.unhexlify(hexdigest)
+        results[alg] = Digest(algorithm=alg, digest=digest_bytes)
 
-    if gvd:
-        _path = path.as_posix()
-        ic(_path, result_dict)
-        del _path
-
-    # ic(result_dict)
-    digest_results = convert_digest_dict_to_objects(
-        digest_dict=result_dict,
-    )
-    return digest_results
+    return results
 
 
-@attr.s(auto_attribs=True)
-class WDgen:
-    width: int
-    depth: int
-
-    def __attrs_post_init__(self):
-        self.gen = product(range(self.width), range(self.depth))
-
-    def go(self):
-        for w, d in self.gen:
-            if w == 0:
-                continue
-            if d == 0:
-                continue
-            else:
-                yield (w, d)
+def shard(
+    hexdigest: str,
+    width: int,
+    depth: int,
+) -> list[str]:
+    """Shard hexdigest into path components."""
+    parts = [hexdigest[i * width : (i + 1) * width] for i in range(depth)]
+    return [p for p in parts if p] + [hexdigest]
 
 
-def sha1_hash_file(
-    path,
-    *,
-    block_size=256 * 128 * 2,
-    binary=False,
-):
-    sha1 = hashlib.sha1()
-    with open(path, "rb") as f:
-        for chunk in iter(lambda: f.read(block_size), b""):
-            sha1.update(chunk)
-    if binary:
-        return sha1.digest()
-    return sha1.hexdigest()
+def hexdigest_to_path(
+    hexdigest: str,
+    width: int,
+    depth: int,
+    root: Path | str | None = None,
+) -> Path:
+    """Convert hexdigest to sharded filesystem path."""
+    parts = shard(hexdigest, width, depth)
+    rel_path = Path(*parts)
+    if root:
+        return Path(root) / rel_path
+    return rel_path
 
 
-def sha3_256_hash_file(
-    path: Path,
-    block_size: int = 256 * 128 * 2,
-) -> bytes:
-    # ic(path)
-    sha3 = hashlib.sha3_256()
-    with open(path, "rb") as f:
-        for chunk in iter(lambda: f.read(block_size), b""):
-            sha3.update(chunk)
-    return sha3.digest()
-
-
-# def get_openssl_hash_algs_real():
-#    blacklist = set(["SHA", "MD4", "ecdsa-with-SHA1", "DSA", "DSA-SHA", "MDC2"])
-#    results = []
-#    command = " ".join(["openssl", "list-message-digest-algorithms"])
-#    p = subprocess.Popen(
-#        command,
-#        shell=True,
-#        stdout=subprocess.PIPE,
-#        stderr=subprocess.STDOUT,
-#    )
-#    for line in p.stdout.readlines():
-#        if b"=>" not in line:
-#            line = line.strip()
-#            #           line = line.lower()
-#            line = line[:]
-#            line = line.decode("ascii")
-#            results.append(line)
-#    return set(results) - blacklist
-
-
-# def get_openssl_hash_algs():
-#    return set(
-#        [
-#            "SHA1",
-#            "MD5",
-#            "RIPEMD160",
-#            "SHA256",
-#            "SHA384",
-#            "SHA512",
-#            "whirlpool",
-#            "SHA224",
-#        ]
-#    )
-
-
-def read_blocks(filename):
+def read_blocks(
+    filename: str | Path,
+    block_size: int = 1048576,
+) -> Iterable[bytes]:
+    """
+    Read file in blocks. Supports stdin via "-".
+    Default block size: 1MB.
+    """
     if filename == "-":
-        f = sys.stdin
-        # Python 3 compat: read binary instead of unicode
-        if hasattr(f, "buffer"):
-            f = f.buffer
+        f = sys.stdin.buffer
+        close = False
     else:
         f = open(filename, "rb")
+        close = True
+
     try:
-        megabyte = 2**20
-        while True:
-            data = f.read(megabyte)
-            if not data:
-                break
-            yield data
+        while chunk := f.read(block_size):
+            yield chunk
     finally:
-        f.close()
+        if close:
+            f.close()
+
+
+def width_depth_combinations(
+    max_width: int,
+    max_depth: int,
+) -> Iterable[tuple[int, int]]:
+    """Generate valid (width, depth) combinations, excluding (0, *) and (*, 0)."""
+    for w in range(1, max_width + 1):
+        for d in range(1, max_depth + 1):
+            yield (w, d)
