@@ -23,7 +23,6 @@ from advisory_lock import AdvisoryLock
 from asserttool import ic
 from asserttool import maxone
 from globalverbose import gvd
-from retry_on_exception import retry_on_exception
 
 logging.basicConfig(level=logging.WARNING)
 logging.getLogger("sh").setLevel(logging.WARNING)
@@ -264,7 +263,7 @@ def hash_readable(
     return hashtool.digest()
 
 
-@retry_on_exception(exception=PermissionError)
+# @retry_on_exception(exception=PermissionError) # wrong level to do that
 def hash_file(
     path: Path,
     *,
