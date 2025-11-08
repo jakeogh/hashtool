@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "hashtool"
-version = "1!0.0.1762636513"
+version = "1!0.0.1762637364"
 description = "common hash functions"
 authors = [
     { name = "Justin Keogh", email = "github.com@v6y.net" },

@@ -19,7 +19,7 @@ from eprint import eprint
 from mptool import output
 from unmp import unmp
 
-from hashtool import generate_hashlib_algorithm_set
+from hashtool import get_available_algorithms
 from hashtool import hash_str
 from hashtool import rhash_file
 
