@@ -27,12 +27,6 @@ from globalverbose import gvd
 logging.basicConfig(level=logging.WARNING)
 logging.getLogger("sh").setLevel(logging.WARNING)
 logger = logging.getLogger()
-# icp(logger)
-
-# from threading import Thread
-# from queue import Queue
-
-# from collections.abc import Sequence
 signal(SIGPIPE, SIG_DFL)
 
 
