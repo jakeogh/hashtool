@@ -18,7 +18,7 @@ from tempfile import _TemporaryFileWrapper
 from typing import Iterable
 
 import attr
-import sh
+import hs
 from advisory_lock import AdvisoryLock
 from asserttool import ic
 from asserttool import maxone
@@ -327,19 +327,19 @@ def rhash_file_sh(
     result_dict = {}
     format_string = []
     # command = ['rhash',]
-    rhash_command = sh.Command("rhash")
+    rhash_command = hs.Command("rhash")
     for algorithm in algorithms:
         if algorithm == "sha3_256":
             # command.append('--sha3-256')
-            rhash_command = rhash_command.bake("--sha3-256")
+            rhash_command.bake("--sha3-256")
             format_string.append("sha3_256:%{sha3-256}")
         elif algorithm == "sha256":
             # command.append('--sha256')
-            rhash_command = rhash_command.bake("--sha256")
+            rhash_command.bake("--sha256")
             format_string.append("sha256:%{sha-256}")
         elif algorithm == "sha1":
             # command.append('--sha1')
-            rhash_command = rhash_command.bake("--sha1")
+            rhash_command.bake("--sha1")
             format_string.append("sha1:%{sha1}")
         else:
             raise NotImplementedError(algorithm)
@@ -347,9 +347,9 @@ def rhash_file_sh(
     format_string = " ".join(format_string)
     format_string = f"--printf={format_string}"
     # command.append(format_string)
-    rhash_command = rhash_command.bake(format_string)
+    rhash_command.bake(format_string)
     # command.append(path.as_posix())
-    rhash_command = rhash_command.bake(path.as_posix())
+    rhash_command.bake(path.as_posix())
 
     # ic(rhash_command)
 
@@ -357,8 +357,8 @@ def rhash_file_sh(
     if disable_locking:
         # try:
         rhash_command_result = rhash_command()
-        # except sh.SignalException_SIGALRM:
-        #    ic("sh.rhash got sh.SignalException_SIGALRM")
+        # except hs.SignalException_SIGALRM:
+        #    ic("hs.rhash got hs.SignalException_SIGALRM")
         #    assert rhash_command_result
         # ic(rhash_command_result)
     else:
@@ -370,7 +370,7 @@ def rhash_file_sh(
             # open_write=True,  #lockf needs R/W
             open_write=False,  # lockf needs R/W
             flock=True,
-        ) as fl:
+        ) as _:
             rhash_command_result = rhash_command()
             # ic(rhash_command_result)
 
@@ -422,24 +422,24 @@ def rhash_file(
     result_dict = {}
     format_string = []
     # icp(logger)
-    sh_command = sh.Command("rhash")
+    sh_command = hs.Command("rhash")
     for algorithm in algorithms:
         if algorithm == "sha3_256":
-            sh_command = sh_command.bake("--sha3-256")
+            sh_command.bake("--sha3-256")
             format_string.append("sha3_256:%{sha3-256}")
         elif algorithm == "sha256":
-            sh_command = sh_command.bake("--sha256")
+            sh_command.bake("--sha256")
             format_string.append("sha256:%{sha-256}")
         elif algorithm == "sha1":
-            sh_command = sh_command.bake("--sha1")
+            sh_command.bake("--sha1")
             format_string.append("sha1:%{sha1}")
         else:
             raise NotImplementedError(algorithm)
 
     format_string = " ".join(format_string)
     # icp(format_string)
-    sh_command = sh_command.bake(f"--printf={format_string}")
-    sh_command = sh_command.bake(path.as_posix())
+    sh_command.bake(f"--printf={format_string}")
+    sh_command.bake(path.as_posix())
     # icp(sh_command)
 
     # epprint(f"{rhash_command=}")
@@ -454,7 +454,7 @@ def rhash_file(
             # open_write=True,  #lockf needs R/W
             open_write=False,  # lockf needs R/W
             flock=True,
-        ) as fl:
+        ) as _:
             rhash_command_result = sh_command()
 
     assert rhash_command_result
