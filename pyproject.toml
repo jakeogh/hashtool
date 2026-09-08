@@ -6,22 +6,22 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "hashtool"
-version = "1!0.0.1762643348"
+version = "1!0.0.1788850252"
 description = "common hash functions"
 authors = [
     { name = "Justin Keogh", email = "github.com@v6y.net" },
 ]
 dependencies = [
-    "advisory-lock @ git+https://github.com/jakeogh/advisory-lock",
-    "asserttool @ git+https://github.com/jakeogh/asserttool",
+    "advisory-lock @ git+https://github.com/jakeogh/advisory-lock@33c88424546eb16ab6a88e2df3681b9bde84cda5",
+    "asserttool @ git+https://github.com/jakeogh/asserttool@4bd23a06c2161e488415acde89c29537e6720cc1",
     "attrs",
-    "click-auto-help @ git+https://github.com/jakeogh/click-auto-help",
-    "clicktool @ git+https://github.com/jakeogh/clicktool",
-    "eprint @ git+https://github.com/jakeogh/eprint",
-    "globalverbose @ git+https://github.com/jakeogh/globalverbose",
-    "mptool @ git+https://github.com/jakeogh/mptool",
-    "unmp @ git+https://github.com/jakeogh/unmp",
-    "hs @ git+https://github.com/jakeogh/hs",
+    "click-auto-help @ git+https://github.com/jakeogh/click-auto-help@7bc2bfd39c7fc11eba09f70861d5121900d1243a",
+    "clicktool @ git+https://github.com/jakeogh/clicktool@4bc98af7590652693aef664af7485acde40688c2",
+    "eprint @ git+https://github.com/jakeogh/eprint@6ee1deca0c24b684eb5093247d6bd22e11f1b057",
+    "globalverbose @ git+https://github.com/jakeogh/globalverbose@ed36633a3208520a523e528e9371988fc33ffea3",
+    "mptool @ git+https://github.com/jakeogh/mptool@a8579325a458cc33c6a212685aa50e16a457ccf6",
+    "unmp @ git+https://github.com/jakeogh/unmp@7272e41db895729d117aa6f1720788c8f88f7476",
+    "hs @ git+https://github.com/jakeogh/hs@b33c88f35cd24e773fea6ca4758193c9e815536d",
 ]
 license = "ISC"
 requires-python = ">=3.11"
