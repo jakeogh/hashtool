@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "hashtool"
-version = "1!0.0.1790565661"
+version = "1!0.0.1792350374"
 description = "common hash functions"
 authors = [
     { name = "Justin Keogh", email = "github.com@v6y.net" },
@@ -15,7 +15,7 @@ dependencies = [
     "advisory-lock @ git+https://github.com/jakeogh/advisory-lock@33c88424546eb16ab6a88e2df3681b9bde84cda5",
     "asserttool @ git+https://github.com/jakeogh/asserttool@4bd23a06c2161e488415acde89c29537e6720cc1",
     "attrs",
-    "click-auto-help @ git+https://github.com/jakeogh/click-auto-help@0308bf2e30095ce9c87a083e1f013731827e60aa",
+    "click-auto-help @ git+https://github.com/jakeogh/click-auto-help@9745b515e7beaaa046f802b5b3ad516720fc2475",
     "clicktool @ git+https://github.com/jakeogh/clicktool@999e9c509115b90ab0149b0b611c0ca90a7baa85",
     "eprint @ git+https://github.com/jakeogh/eprint@6ee1deca0c24b684eb5093247d6bd22e11f1b057",
     "globalverbose @ git+https://github.com/jakeogh/globalverbose@ed36633a3208520a523e528e9371988fc33ffea3",
