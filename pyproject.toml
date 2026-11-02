@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "hashtool"
-version = "1!0.0.1793488268"
+version = "1!0.0.1793592908"
 description = "common hash functions"
 authors = [
     { name = "Justin Keogh", email = "github.com@v6y.net" },
@@ -21,7 +21,7 @@ dependencies = [
     "globalverbose @ git+https://github.com/jakeogh/globalverbose@ed36633a3208520a523e528e9371988fc33ffea3",
     "mptool @ git+https://github.com/jakeogh/mptool@49db67178bc07c5664b20d9d0313746af08b039c",
     "unmp @ git+https://github.com/jakeogh/unmp@d146de4e0c34cdf829a22455eae429cf43251d84",
-    "hs @ git+https://github.com/jakeogh/hs@b6f75452351ccc668bc87c6f03d73268ff7a0b24",
+    "hs @ git+https://github.com/jakeogh/hs@f78ba108be9c6a188ebda128cba192ae244bccd8",
 ]
 license = "ISC"
 requires-python = ">=3.11"
